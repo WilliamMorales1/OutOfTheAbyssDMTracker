@@ -95,10 +95,26 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 <button hx-post="/reindex" hx-target="#reindex-status" hx-swap="innerHTML">Re-index DB →</button>
 <span id="reindex-status"></span>
 <div id="chat-history"></div>
-<form hx-post="/chat" hx-target="#chat-history" hx-swap="beforeend" hx-on::after-request="this.reset()" hx-indicator="#chat-spinner">
-  <input name="q" type="text" placeholder="Ask anything about the campaign..." required>
-  <button type="submit">Ask</button>
-  <span id="chat-spinner" class="htmx-indicator ms-2">Thinking...</span>
+<form hx-post="/chat" 
+      hx-target="#chat-history" 
+      hx-swap="beforeend" 
+      hx-on::after-request="this.reset()" 
+      hx-indicator="#chat-spinner"
+      class="mt-3">
+  
+  <div class="input-group">
+    <input name="q" 
+           type="text" 
+           class="form-control bg-dark text-light border-secondary" 
+           placeholder="Ask anything about the campaign..." 
+           required>
+    <button class="btn btn-primary" type="submit">Ask</button>
+  </div>
+
+  <div class="mt-2">
+    <span id="chat-spinner" class="htmx-indicator spinner-border spinner-border-sm text-warning" role="status"></span>
+    <span id="chat-spinner-text" class="htmx-indicator ms-2 text-secondary small">Thinking...</span>
+  </div>
 </form>`)
 	default:
 		endpoint := "/" + tab
@@ -113,16 +129,9 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLocations(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("q")
-	query := `SELECT id, name, type, status, danger, description, secrets FROM Locations`
-	args := []any{}
-	if q != "" {
-		query += ` WHERE name ILIKE $1 OR description ILIKE $1 OR type ILIKE $1`
-		args = append(args, "%"+q+"%")
-	}
-	query += ` ORDER BY name`
+	query := `SELECT id, name, type, status, danger, description, secrets FROM Locations ORDER BY name`
 
-	rows, err := db.Query(context.Background(), query, args...)
+	rows, err := db.Query(context.Background(), query)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -143,16 +152,9 @@ func handleLocations(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleNPCs(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("q")
-	query := `SELECT id, COALESCE(name,''), COALESCE(madness,0), COALESCE(disposition,''), COALESCE(location,''), COALESCE(notes,''), COALESCE(description,'') FROM NPCS`
-	args := []any{}
-	if q != "" {
-		query += ` WHERE name ILIKE $1 OR location ILIKE $1 OR disposition ILIKE $1`
-		args = append(args, "%"+q+"%")
-	}
-	query += ` ORDER BY name`
+	query := `SELECT id, name, madness, disposition, location, notes, description FROM NPCS ORDER BY name`
 
-	rows, err := db.Query(context.Background(), query, args...)
+	rows, err := db.Query(context.Background(), query)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -173,16 +175,9 @@ func handleNPCs(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleEncounters(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("q")
-	query := `SELECT id, COALESCE(name,''), COALESCE(location,''), COALESCE(difficulty,0), COALESCE(status,''), COALESCE(enemies,''), COALESCE(levelup,false), COALESCE(notes,'') FROM Encounters`
-	args := []any{}
-	if q != "" {
-		query += ` WHERE name ILIKE $1 OR location ILIKE $1 OR status ILIKE $1`
-		args = append(args, "%"+q+"%")
-	}
-	query += ` ORDER BY name`
+	query := `SELECT id, name, COALESCE(location,''), difficulty, status, enemies, levelup, notes FROM Encounters ORDER BY name`
 
-	rows, err := db.Query(context.Background(), query, args...)
+	rows, err := db.Query(context.Background(), query)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -203,16 +198,9 @@ func handleEncounters(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleEvents(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query().Get("q")
-	query := `SELECT id, title, category, description FROM Events`
-	args := []any{}
-	if q != "" {
-		query += ` WHERE title ILIKE $1 OR category ILIKE $1 OR description ILIKE $1`
-		args = append(args, "%"+q+"%")
-	}
-	query += ` ORDER BY title`
+	query := `SELECT id, title, category, description FROM Events ORDER BY title`
 
-	rows, err := db.Query(context.Background(), query, args...)
+	rows, err := db.Query(context.Background(), query)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -256,82 +244,122 @@ func renderTable(w http.ResponseWriter, tmplStr string, data interface{}) {
 }
 
 var locationsTmpl = `
-{{if .}}
-<table class="table table-dark table-bordered table-striped">
-  <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Danger</th><th>Description</th><th>Secrets</th></tr></thead>
-  <tbody>
-  {{range .}}
-  <tr>
-    <td><strong>{{.Name}}</strong></td>
-    <td>{{.Type_}}</td>
-    <td><span class="badge status-{{.Status}}">{{.Status}}</span></td>
-    <td class="danger">{{danger .Danger}}</td>
-    <td>{{.Description}}</td>
-    <td class="secrets">{{.Secrets}}</td>
-  </tr>
-  {{end}}
-  </tbody>
-</table>
-{{else}}<p class="empty">No locations found.</p>
-{{end}}`
+<div class="table-responsive">
+  <table class="table table-dark table-hover table-bordered datatable w-100">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Danger</th>
+        <th>Description</th>
+        <th>Secrets</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td><strong>{{.Name}}</strong></td>
+        <td>{{.Type_}}</td>
+        <td><span class="badge bg-primary">{{.Status}}</span></td>
+        <td data-order="{{.Danger}}">{{danger .Danger}}</td>
+        <td>{{.Description}}</td>
+        <td>{{.Secrets}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>`
 
 var npcsTmpl = `
-{{if .}}
-<table class="table table-dark table-bordered table-striped">
-  <thead><tr><th>Name</th><th>Madness</th><th>Disposition</th><th>Location</th><th>Description</th><th>Notes</th></tr></thead>
-  <tbody>
-  {{range .}}
-  <tr>
-    <td><strong>{{.Name}}</strong></td>
-    <td class="danger">{{danger .Madness}}</td>
-    <td><span class="badge disp-{{.Disposition}}">{{.Disposition}}</span></td>
-    <td>{{.Location}}</td>
-    <td>{{.Description}}</td>
-    <td>{{.Notes}}</td>
-  </tr>
+<div class="table-responsive">
+  {{if .}}
+  <table class="table table-dark table-hover table-bordered datatable w-100">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Madness</th>
+        <th>Disposition</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td><strong>{{.Name}}</strong></td>
+        <td class="danger" data-order="{{.Madness}}">{{danger .Madness}}</td>
+        <td><span class="badge disp-{{.Disposition}}">{{.Disposition}}</span></td>
+        <td>{{.Location}}</td>
+        <td>{{.Description}}</td>
+        <td>{{.Notes}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="empty">No NPCs found.</p>
   {{end}}
-  </tbody>
-</table>
-{{else}}<p class="empty">No NPCs found.</p>
-{{end}}`
+</div>`
 
 var encountersTmpl = `
-{{if .}}
-<table class="table table-dark table-bordered table-striped">
-  <thead><tr><th>Name</th><th>Location</th><th>Difficulty</th><th>Status</th><th>Enemies</th><th>Level Up</th><th>Notes</th></tr></thead>
-  <tbody>
-  {{range .}}
-  <tr>
-    <td><strong>{{.Name}}</strong></td>
-    <td>{{.Location}}</td>
-    <td class="danger">{{danger .Difficulty}}</td>
-    <td><span class="badge status-{{.Status}}">{{.Status}}</span></td>
-    <td>{{.Enemies}}</td>
-    <td>{{if .Levelup}}✓{{end}}</td>
-    <td>{{.Notes}}</td>
-  </tr>
+<div class="table-responsive">
+  {{if .}}
+  <table class="table table-dark table-hover table-bordered datatable w-100">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Difficulty</th>
+        <th>Status</th>
+        <th>Enemies</th>
+        <th>Level Up</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td><strong>{{.Name}}</strong></td>
+        <td>{{.Location}}</td>
+        <td class="danger" data-order="{{.Difficulty}}">{{danger .Difficulty}}</td>
+        <td><span class="badge status-{{.Status}}">{{.Status}}</span></td>
+        <td>{{.Enemies}}</td>
+        <td>{{.Levelup}}</td>
+        <td>{{.Notes}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+    <p class="empty p-3">No encounters found.</p>
   {{end}}
-  </tbody>
-</table>
-{{else}}<p class="empty">No encounters found.</p>
-{{end}}`
+</div>`
 
 var eventsTmpl = `
-{{if .}}
-<table class="table table-dark table-bordered table-striped">
-  <thead><tr><th>Title</th><th>Category</th><th>Description</th></tr></thead>
-  <tbody>
-  {{range .}}
-  <tr>
-    <td><strong>{{.Title}}</strong></td>
-    <td><span class="badge cat-{{.Category}}">{{.Category}}</span></td>
-    <td>{{.Description}}</td>
-  </tr>
+<div class="table-responsive">
+  {{if .}}
+  <table class="table table-dark table-hover table-bordered datatable w-100">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td><strong>{{.Title}}</strong></td>
+        <td><span class="badge cat-{{.Category}}">{{.Category}}</span></td>
+        <td>{{.Description}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="empty">No events found.</p>
   {{end}}
-  </tbody>
-</table>
-{{else}}<p class="empty">No events found.</p>
-{{end}}`
+</div>`
 
 type location struct {
 	Id          int64
