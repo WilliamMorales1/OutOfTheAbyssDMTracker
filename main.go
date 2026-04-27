@@ -129,7 +129,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLocations(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT id, name, type, status, danger, description, secrets FROM Locations ORDER BY name`
+	query := `SELECT id, name, type, danger, description, secrets FROM Locations ORDER BY name`
 
 	rows, err := db.Query(context.Background(), query)
 	if err != nil {
@@ -141,7 +141,7 @@ func handleLocations(w http.ResponseWriter, r *http.Request) {
 	var locs []location
 	for rows.Next() {
 		var l location
-		if err := rows.Scan(&l.Id, &l.Name, &l.Type_, &l.Status, &l.Danger, &l.Description, &l.Secrets); err != nil {
+		if err := rows.Scan(&l.Id, &l.Name, &l.Type_, &l.Danger, &l.Description, &l.Secrets); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -175,7 +175,7 @@ func handleNPCs(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleEncounters(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT id, name, COALESCE(location,''), difficulty, status, enemies, levelup, notes FROM Encounters ORDER BY name`
+	query := `SELECT id, name, COALESCE(location,''), difficulty, enemies, levelup, notes FROM Encounters ORDER BY name`
 
 	rows, err := db.Query(context.Background(), query)
 	if err != nil {
@@ -187,7 +187,7 @@ func handleEncounters(w http.ResponseWriter, r *http.Request) {
 	var encs []encounter
 	for rows.Next() {
 		var e encounter
-		if err := rows.Scan(&e.Id, &e.Name, &e.Location, &e.Difficulty, &e.Status, &e.Enemies, &e.Levelup, &e.Notes); err != nil {
+		if err := rows.Scan(&e.Id, &e.Name, &e.Location, &e.Difficulty, &e.Enemies, &e.Levelup, &e.Notes); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -250,7 +250,6 @@ var locationsTmpl = `
       <tr>
         <th>Name</th>
         <th>Type</th>
-        <th>Status</th>
         <th>Danger</th>
         <th>Description</th>
         <th>Secrets</th>
@@ -261,7 +260,6 @@ var locationsTmpl = `
       <tr>
         <td><strong>{{.Name}}</strong></td>
         <td>{{.Type_}}</td>
-        <td><span class="badge bg-primary">{{.Status}}</span></td>
         <td data-order="{{.Danger}}">{{danger .Danger}}</td>
         <td>{{.Description}}</td>
         <td>{{.Secrets}}</td>
@@ -311,7 +309,6 @@ var encountersTmpl = `
         <th>Name</th>
         <th>Location</th>
         <th>Difficulty</th>
-        <th>Status</th>
         <th>Enemies</th>
         <th>Level Up</th>
         <th>Notes</th>
@@ -323,7 +320,6 @@ var encountersTmpl = `
         <td><strong>{{.Name}}</strong></td>
         <td>{{.Location}}</td>
         <td class="danger" data-order="{{.Difficulty}}">{{danger .Difficulty}}</td>
-        <td><span class="badge status-{{.Status}}">{{.Status}}</span></td>
         <td>{{.Enemies}}</td>
         <td>{{.Levelup}}</td>
         <td>{{.Notes}}</td>
@@ -365,7 +361,6 @@ type location struct {
 	Id          int64
 	Name        string
 	Type_       string
-	Status      string
 	Danger      int
 	Description string
 	Secrets     string
@@ -386,7 +381,6 @@ type encounter struct {
 	Name       string
 	Location   string
 	Difficulty int
-	Status     string
 	Enemies    string
 	Levelup    bool
 	Notes      string

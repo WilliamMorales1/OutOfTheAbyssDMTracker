@@ -27,7 +27,6 @@ type doc struct {
 	Name        string `json:"name"`
 	Title       string `json:"title"`
 	Type        string `json:"type"`
-	Status      string `json:"status"`
 	Danger      int    `json:"danger"`
 	Description string `json:"description"`
 	Secrets     string `json:"secrets"`
@@ -50,15 +49,15 @@ func indexAll() error {
 	batch := bIdx.NewBatch()
 	ctx := context.Background()
 
-	rows, err := db.Query(ctx, "SELECT id, name, type, status, danger, description, secrets FROM Locations")
+	rows, err := db.Query(ctx, "SELECT id, name, type, danger, description, secrets FROM Locations")
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
 		var l location
-		rows.Scan(&l.Id, &l.Name, &l.Type_, &l.Status, &l.Danger, &l.Description, &l.Secrets)
+		rows.Scan(&l.Id, &l.Name, &l.Type_, &l.Danger, &l.Description, &l.Secrets)
 		batch.Index(fmt.Sprintf("loc-%d", l.Id), doc{
-			Table: "locations", Name: l.Name, Type: l.Type_, Status: l.Status,
+			Table: "locations", Name: l.Name, Type: l.Type_,
 			Danger: l.Danger, Description: l.Description, Secrets: l.Secrets,
 		})
 	}
@@ -78,16 +77,16 @@ func indexAll() error {
 	}
 	rows.Close()
 
-	rows, err = db.Query(ctx, "SELECT id, name, location, difficulty, status, enemies, levelup, notes FROM Encounters")
+	rows, err = db.Query(ctx, "SELECT id, name, location, difficulty, enemies, levelup, notes FROM Encounters")
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
 		var e encounter
-		rows.Scan(&e.Id, &e.Name, &e.Location, &e.Difficulty, &e.Status, &e.Enemies, &e.Levelup, &e.Notes)
+		rows.Scan(&e.Id, &e.Name, &e.Location, &e.Difficulty, &e.Enemies, &e.Levelup, &e.Notes)
 		batch.Index(fmt.Sprintf("enc-%d", e.Id), doc{
-			Table: "encounters", Name: e.Name, Location: e.Location, Difficulty: e.Difficulty,
-			Status: e.Status, Enemies: e.Enemies, Notes: e.Notes,
+			Table: "encounters", Name: e.Name, Location: e.Location,
+			Difficulty: e.Difficulty, Enemies: e.Enemies, Notes: e.Notes,
 		})
 	}
 	rows.Close()
@@ -133,7 +132,7 @@ func searchBleve(query, table string) string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Found %d result(s):\n\n", res.Total))
+	fmt.Fprintf(&sb, "Found %d result(s):\n\n", res.Total)
 	for i, hit := range res.Hits {
 		tbl, _ := hit.Fields["table"].(string)
 		name, _ := hit.Fields["name"].(string)
@@ -142,8 +141,8 @@ func searchBleve(query, table string) string {
 		if label == "" {
 			label = title
 		}
-		sb.WriteString(fmt.Sprintf("[%d] (%s) %s", i+1, strings.ToUpper(tbl), label))
-		for _, k := range []string{"status", "disposition", "location", "category", "description", "notes", "secrets", "enemies"} {
+		fmt.Fprintf(&sb, "[%d] (%s) %s", i+1, strings.ToUpper(tbl), label)
+		for _, k := range []string{"disposition", "location", "category", "description", "notes", "secrets", "enemies"} {
 			if v, ok := hit.Fields[k].(string); ok && v != "" {
 				sb.WriteString(fmt.Sprintf(" %s=%s", k, v))
 			}
