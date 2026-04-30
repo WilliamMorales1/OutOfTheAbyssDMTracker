@@ -34,28 +34,9 @@
 
   <div class="container">
     <ul class="nav nav-tabs border-secondary mb-3" id="tabs">
-      <li class="nav-item">
-        <button class="nav-link active text-light" hx-get="/panel/locations" hx-target="#panel"
-          hx-swap="innerHTML">Locations</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link text-light" hx-get="/panel/npcs" hx-target="#panel" hx-swap="innerHTML">NPCs</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link text-light" hx-get="/panel/encounters" hx-target="#panel"
-          hx-swap="innerHTML">Encounters</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link text-light" hx-get="/panel/events" hx-target="#panel"
-          hx-swap="innerHTML">Events</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link text-light" hx-get="/panel/chat" hx-target="#panel" hx-swap="innerHTML">Ask
-          Agent</button>
-      </li>
     </ul>
 
-    <div id="panel" class="bg-secondary bg-opacity-10 rounded p-3" hx-get="/panel/locations" hx-trigger="load"
+    <div id="panel" class="bg-secondary bg-opacity-10 rounded p-3" hx-get="/panel/sessions" hx-trigger="load"
       hx-swap="innerHTML"></div>
   </div>
 

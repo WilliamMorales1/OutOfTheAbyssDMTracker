@@ -37,6 +37,7 @@ func main() {
 	mux.HandleFunc("/encounters", handleEncounters)
 	mux.HandleFunc("/events", handleEvents)
 	mux.HandleFunc("/monsters", handleMonsters)
+	mux.HandleFunc("/sessions", handleSessions)
 	mux.HandleFunc("/chat", handleChat)
 	mux.HandleFunc("/search", handleSearch)
 
@@ -55,6 +56,7 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		Name string
 		Path string
 	}{
+		{"Sessions", "sessions"},
 		{"Locations", "locations"},
 		{"NPCs", "npcs"},
 		{"Encounters", "encounters"},
@@ -120,6 +122,29 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `
 <div id="results" hx-get="%s" hx-trigger="load" hx-swap="innerHTML"></div>`, endpoint)
 	}
+}
+
+func handleSessions(w http.ResponseWriter, r *http.Request) {
+	query := `SELECT id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, dm_notes
+	          FROM Sessions ORDER BY session_num`
+	rows, err := db.Query(context.Background(), query)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+
+	var sessions []session
+	for rows.Next() {
+		var s session
+		if err := rows.Scan(&s.Id, &s.SessionNum, &s.Title, &s.Chapters, &s.LevelStart, &s.LevelEnd,
+			&s.Summary, &s.KeyEncounters, &s.KeyNPCs, &s.DMNotes); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		sessions = append(sessions, s)
+	}
+	renderTable(w, sessionsTmpl, sessions)
 }
 
 func handleLocations(w http.ResponseWriter, r *http.Request) {
@@ -304,6 +329,41 @@ func renderTable(w http.ResponseWriter, tmplStr string, data interface{}) {
 		fmt.Fprintf(w, "<p class='error'>%s</p>", err.Error())
 	}
 }
+
+var sessionsTmpl = `
+<div class="table-responsive">
+  {{if .}}
+  <table class="table table-dark table-hover table-bordered datatable w-100">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Title</th>
+        <th>Chapters</th>
+        <th>Levels</th>
+        <th>Summary</th>
+        <th>Key Encounters</th>
+        <th>Key NPCs</th>
+        <th>DM Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td><strong>{{.SessionNum}}</strong></td>
+        <td><strong>{{.Title}}</strong></td>
+        <td><span class="badge bg-secondary">{{.Chapters}}</span></td>
+        <td><span class="badge bg-info text-dark">{{.LevelStart}}{{if ne .LevelStart .LevelEnd}}→{{.LevelEnd}}{{end}}</span></td>
+        <td>{{.Summary}}</td>
+        <td>{{.KeyEncounters}}</td>
+        <td>{{.KeyNPCs}}</td>
+        <td>{{.DMNotes}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="empty p-3">No sessions found. Run: <code>go run ./database/seed_sessions.go</code></p>
+  {{end}}
+</div>`
 
 var monstersTmpl = `
 <div class="table-responsive">
@@ -499,6 +559,19 @@ type event struct {
 	Title       string
 	Category    string
 	Description string
+}
+
+type session struct {
+	Id            int64
+	SessionNum    int
+	Title         string
+	Chapters      string
+	LevelStart    int
+	LevelEnd      int
+	Summary       string
+	KeyEncounters string
+	KeyNPCs       string
+	DMNotes       string
 }
 
 type monster struct {
