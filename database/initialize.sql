@@ -1,5 +1,5 @@
 -- Active: 1777184786331@@127.0.0.1@5432@oota
-CREATE TABLE Locations (
+CREATE IF NOT EXISTS TABLE Locations (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name text unique,
     type text,
@@ -9,7 +9,7 @@ CREATE TABLE Locations (
     secrets text
 );
 
-CREATE TABLE NPCS (
+CREATE IF NOT EXISTS TABLE NPCS (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     description TEXT,
     madness int,
@@ -19,7 +19,7 @@ CREATE TABLE NPCS (
     notes text
 );
 
-CREATE TABLE Encounters (
+CREATE IF NOT EXISTS TABLE Encounters (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name text,
     location text references Locations(name),
@@ -30,7 +30,7 @@ CREATE TABLE Encounters (
     notes text
 );
 
-CREATE TABLE Events (
+CREATE IF NOT EXISTS TABLE Events (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     title text,
     category text,

@@ -29,20 +29,6 @@ func main() {
 	}
 	defer db.Close(ctx)
 
-	initAI()
-
-	if err := openIndex(); err != nil {
-		log.Fatal("bleve open:", err)
-	}
-
-	go func() {
-		if err := indexAll(); err != nil {
-			log.Println("Bleve index error:", err)
-		} else {
-			log.Println("Bleve indexed.")
-		}
-	}()
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveHTML)
 	mux.HandleFunc("/panel/", handlePanel)
@@ -50,8 +36,9 @@ func main() {
 	mux.HandleFunc("/npcs", handleNPCs)
 	mux.HandleFunc("/encounters", handleEncounters)
 	mux.HandleFunc("/events", handleEvents)
+	mux.HandleFunc("/monsters", handleMonsters)
 	mux.HandleFunc("/chat", handleChat)
-	mux.HandleFunc("/reindex", handleReindex)
+	mux.HandleFunc("/search", handleSearch)
 
 	log.Println("Listening on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", logRequests(mux)))
@@ -71,8 +58,10 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		{"Locations", "locations"},
 		{"NPCs", "npcs"},
 		{"Encounters", "encounters"},
+		{"Monsters", "monsters"},
 		{"Events", "events"},
 		{"Ask Agent", "chat"},
+		{"Lore Search", "search"},
 	}
 
 	var tabsHTML strings.Builder
@@ -92,8 +81,6 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 	switch tab {
 	case "chat":
 		fmt.Fprint(w, `
-<button hx-post="/reindex" hx-target="#reindex-status" hx-swap="innerHTML">Re-index DB →</button>
-<span id="reindex-status"></span>
 <div id="chat-history"></div>
 <form hx-post="/chat" 
       hx-target="#chat-history" 
@@ -116,15 +103,22 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
     <span id="chat-spinner-text" class="htmx-indicator ms-2 text-secondary small">Thinking...</span>
   </div>
 </form>`)
+	case "search":
+		fmt.Fprint(w, `
+<form hx-get="/search" hx-target="#results" hx-swap="innerHTML" hx-indicator="#search-spinner">
+  <div class="input-group mb-3">
+    <input name="q" type="text" class="form-control bg-dark text-light border-secondary"
+           placeholder="Search lore semantically... (e.g. 'drow priestess tactics')" required>
+    <button class="btn btn-warning" type="submit">Search</button>
+  </div>
+  <span id="search-spinner" class="htmx-indicator spinner-border spinner-border-sm text-warning me-2"></span>
+  <span class="htmx-indicator text-secondary small">Searching...</span>
+</form>
+<div id="results" class="mt-3"></div>`)
 	default:
 		endpoint := "/" + tab
 		fmt.Fprintf(w, `
-<form hx-get="%s" hx-target="#results" hx-swap="innerHTML">
-  <input name="q" type="text" placeholder="Search...">
-  <button type="submit">Search</button>
-  <span class="htmx-indicator" id="spinner">Loading...</span>
-</form>
-<div id="results" hx-get="%s" hx-trigger="load" hx-swap="innerHTML"></div>`, endpoint, endpoint)
+<div id="results" hx-get="%s" hx-trigger="load" hx-swap="innerHTML"></div>`, endpoint)
 	}
 }
 
@@ -175,9 +169,11 @@ func handleNPCs(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleEncounters(w http.ResponseWriter, r *http.Request) {
-	query := `SELECT id, name, COALESCE(location,''), difficulty, enemies, levelup, notes FROM Encounters ORDER BY name`
+	ctx := context.Background()
 
-	rows, err := db.Query(context.Background(), query)
+	rows, err := db.Query(ctx,
+		`SELECT id, name, chapter, COALESCE(location,''), difficulty, levelup, notes
+		 FROM Encounters ORDER BY chapter, name`)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -185,13 +181,39 @@ func handleEncounters(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	var encs []encounter
+	idIndex := map[int64]int{}
 	for rows.Next() {
 		var e encounter
-		if err := rows.Scan(&e.Id, &e.Name, &e.Location, &e.Difficulty, &e.Enemies, &e.Levelup, &e.Notes); err != nil {
+		if err := rows.Scan(&e.Id, &e.Name, &e.Chapter, &e.Location, &e.Difficulty, &e.Levelup, &e.Notes); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
+		idIndex[e.Id] = len(encs)
 		encs = append(encs, e)
+	}
+
+	// Attach monsters via join table
+	mRows, err := db.Query(ctx,
+		`SELECT em.encounter_id, m.name, m.cr, em.quantity
+		 FROM EncounterMonsters em
+		 JOIN Monsters m ON m.id = em.monster_id
+		 ORDER BY em.encounter_id,
+		   CASE m.cr WHEN '1/8' THEN 0.125 WHEN '1/4' THEN 0.25 WHEN '1/2' THEN 0.5
+		             ELSE m.cr::numeric END NULLS LAST,
+		   m.name`)
+	if err != nil {
+		log.Printf("encounter monsters query: %v", err)
+	} else {
+		defer mRows.Close()
+		for mRows.Next() {
+			var eid int64
+			var em encounterMonster
+			if err := mRows.Scan(&eid, &em.Name, &em.CR, &em.Quantity); err == nil {
+				if idx, ok := idIndex[eid]; ok {
+					encs[idx].Monsters = append(encs[idx].Monsters, em)
+				}
+			}
+		}
 	}
 
 	renderTable(w, encountersTmpl, encs)
@@ -220,6 +242,46 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 	renderTable(w, eventsTmpl, evts)
 }
 
+func handleMonsters(w http.ResponseWriter, r *http.Request) {
+	// Sort by numeric CR value, then name
+	query := `SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
+		str, dex, con, int_score, wis, cha,
+		COALESCE(saving_throws,''), COALESCE(damage_resistances,''), COALESCE(damage_immunities,''),
+		COALESCE(condition_immunities,''), COALESCE(senses,''), COALESCE(languages,''),
+		COALESCE(traits,''), COALESCE(actions,''), COALESCE(legendary_actions,''), COALESCE(notes,'')
+		FROM Monsters
+		ORDER BY
+			CASE cr WHEN '1/8' THEN 0.125 WHEN '1/4' THEN 0.25 WHEN '1/2' THEN 0.5
+				ELSE cr::numeric END NULLS LAST,
+			name`
+
+	rows, err := db.Query(context.Background(), query)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+
+	var monsters []monster
+	for rows.Next() {
+		var m monster
+		if err := rows.Scan(
+			&m.Id, &m.Name, &m.Type_, &m.CR, &m.HP, &m.HPFormula,
+			&m.AC, &m.ACDesc, &m.Speed,
+			&m.STR, &m.DEX, &m.CON, &m.INT, &m.WIS, &m.CHA,
+			&m.SavingThrows, &m.DmgResistances, &m.DmgImmunities,
+			&m.CondImmunities, &m.Senses, &m.Languages,
+			&m.Traits, &m.Actions, &m.LegendaryActions, &m.Notes,
+		); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		monsters = append(monsters, m)
+	}
+
+	renderTable(w, monstersTmpl, monsters)
+}
+
 func renderTable(w http.ResponseWriter, tmplStr string, data interface{}) {
 	tmpl, err := template.New("t").Funcs(template.FuncMap{
 		"danger": func(d int) string {
@@ -242,6 +304,37 @@ func renderTable(w http.ResponseWriter, tmplStr string, data interface{}) {
 		fmt.Fprintf(w, "<p class='error'>%s</p>", err.Error())
 	}
 }
+
+var monstersTmpl = `
+<div class="table-responsive">
+  {{if .}}
+  <table class="table table-dark table-hover table-bordered datatable w-100">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>CR</th>
+        <th>HP</th>
+        <th>AC</th>
+        <th>Speed</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td><strong>{{.Name}}</strong></td>
+        <td>{{.Type_}}</td>
+        <td>{{.CR}}</td>
+        <td>{{.HP}}{{if .HPFormula}} <small class="text-secondary">({{.HPFormula}})</small>{{end}}</td>
+        <td>{{.AC}}{{if .ACDesc}} <small class="text-secondary">({{.ACDesc}})</small>{{end}}</td>
+        <td>{{.Speed}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="empty p-3">No monsters found. Run: <code>go run ./database/seed_monsters.go</code></p>
+  {{end}}
+</div>`
 
 var locationsTmpl = `
 <div class="table-responsive">
@@ -307,9 +400,10 @@ var encountersTmpl = `
     <thead>
       <tr>
         <th>Name</th>
+        <th>Chapter</th>
         <th>Location</th>
         <th>Difficulty</th>
-        <th>Enemies</th>
+        <th>Monsters</th>
         <th>Level Up</th>
         <th>Notes</th>
       </tr>
@@ -318,10 +412,17 @@ var encountersTmpl = `
       {{range .}}
       <tr>
         <td><strong>{{.Name}}</strong></td>
+        <td>{{.Chapter}}</td>
         <td>{{.Location}}</td>
         <td class="danger" data-order="{{.Difficulty}}">{{danger .Difficulty}}</td>
-        <td>{{.Enemies}}</td>
-        <td>{{.Levelup}}</td>
+        <td>
+          {{range .Monsters}}
+          <span class="badge bg-secondary me-1 mb-1">
+            {{if ne .Quantity "1"}}{{.Quantity}}× {{end}}{{.Name}}<small class="ms-1 text-warning">CR{{.CR}}</small>
+          </span>
+          {{end}}
+        </td>
+        <td>{{if .Levelup}}<span class="badge bg-success">✓</span>{{end}}</td>
         <td>{{.Notes}}</td>
       </tr>
       {{end}}
@@ -376,12 +477,19 @@ type npc struct {
 	Description string
 }
 
+type encounterMonster struct {
+	Name     string
+	CR       string
+	Quantity string
+}
+
 type encounter struct {
 	Id         int64
 	Name       string
+	Chapter    int
 	Location   string
 	Difficulty int
-	Enemies    string
+	Monsters   []encounterMonster
 	Levelup    bool
 	Notes      string
 }
@@ -391,4 +499,28 @@ type event struct {
 	Title       string
 	Category    string
 	Description string
+}
+
+type monster struct {
+	Id               int64
+	Name             string
+	Type_            string
+	CR               string
+	HP               int
+	HPFormula        string
+	AC               int
+	ACDesc           string
+	Speed            string
+	STR, DEX, CON    int
+	INT, WIS, CHA    int
+	SavingThrows     string
+	DmgResistances   string
+	DmgImmunities    string
+	CondImmunities   string
+	Senses           string
+	Languages        string
+	Traits           string
+	Actions          string
+	LegendaryActions string
+	Notes            string
 }

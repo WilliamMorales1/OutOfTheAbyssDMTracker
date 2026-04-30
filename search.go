@@ -1,153 +1,113 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"html/template"
+	"net/http"
 	"strings"
-
-	"github.com/blevesearch/bleve/v2"
 )
 
-const indexPath = "oota.bleve"
+const searchEmbedModel = "nomic-embed-text-v2-moe"
 
-var bIdx bleve.Index
-
-func openIndex() error {
-	var err error
-	bIdx, err = bleve.Open(indexPath)
-	if err == bleve.ErrorIndexPathDoesNotExist {
-		mapping := bleve.NewIndexMapping()
-		bIdx, err = bleve.New(indexPath, mapping)
+func queryEmbedding(ctx context.Context, text string) (string, error) {
+	type req struct {
+		Model  string `json:"model"`
+		Prompt string `json:"prompt"`
 	}
-	return err
-}
-
-type doc struct {
-	Table       string `json:"table"`
-	Name        string `json:"name"`
-	Title       string `json:"title"`
-	Type        string `json:"type"`
-	Danger      int    `json:"danger"`
-	Description string `json:"description"`
-	Secrets     string `json:"secrets"`
-	Madness     int    `json:"madness"`
-	Disposition string `json:"disposition"`
-	Location    string `json:"location"`
-	Notes       string `json:"notes"`
-	Difficulty  int    `json:"difficulty"`
-	Enemies     string `json:"enemies"`
-	Category    string `json:"category"`
-}
-
-func indexAll() error {
-	if bIdx == nil {
-		if err := openIndex(); err != nil {
-			return err
-		}
+	type resp struct {
+		Embedding []float32 `json:"embedding"`
 	}
-
-	batch := bIdx.NewBatch()
-	ctx := context.Background()
-
-	rows, err := db.Query(ctx, "SELECT id, name, type, danger, description, secrets FROM Locations")
+	body, _ := json.Marshal(req{Model: searchEmbedModel, Prompt: text})
+	r, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:11434/api/embeddings", bytes.NewReader(body))
 	if err != nil {
-		return err
+		return "", err
 	}
-	for rows.Next() {
-		var l location
-		rows.Scan(&l.Id, &l.Name, &l.Type_, &l.Danger, &l.Description, &l.Secrets)
-		batch.Index(fmt.Sprintf("loc-%d", l.Id), doc{
-			Table: "locations", Name: l.Name, Type: l.Type_,
-			Danger: l.Danger, Description: l.Description, Secrets: l.Secrets,
-		})
-	}
-	rows.Close()
-
-	rows, err = db.Query(ctx, "SELECT id, name, madness, disposition, location, notes, description FROM NPCS")
+	r.Header.Set("Content-Type", "application/json")
+	res, err := http.DefaultClient.Do(r)
 	if err != nil {
-		return err
+		return "", fmt.Errorf("Ollama not reachable: %w", err)
 	}
-	for rows.Next() {
-		var n npc
-		rows.Scan(&n.Id, &n.Name, &n.Madness, &n.Disposition, &n.Location, &n.Notes, &n.Description)
-		batch.Index(fmt.Sprintf("npc-%d", n.Id), doc{
-			Table: "npcs", Name: n.Name, Madness: n.Madness, Disposition: n.Disposition,
-			Location: n.Location, Notes: n.Notes, Description: n.Description,
-		})
+	defer res.Body.Close()
+	var er resp
+	if err := json.NewDecoder(res.Body).Decode(&er); err != nil {
+		return "", err
 	}
-	rows.Close()
-
-	rows, err = db.Query(ctx, "SELECT id, name, location, difficulty, enemies, levelup, notes FROM Encounters")
-	if err != nil {
-		return err
-	}
-	for rows.Next() {
-		var e encounter
-		rows.Scan(&e.Id, &e.Name, &e.Location, &e.Difficulty, &e.Enemies, &e.Levelup, &e.Notes)
-		batch.Index(fmt.Sprintf("enc-%d", e.Id), doc{
-			Table: "encounters", Name: e.Name, Location: e.Location,
-			Difficulty: e.Difficulty, Enemies: e.Enemies, Notes: e.Notes,
-		})
-	}
-	rows.Close()
-
-	rows, err = db.Query(ctx, "SELECT id, title, category, description FROM Events")
-	if err != nil {
-		return err
-	}
-	for rows.Next() {
-		var ev event
-		rows.Scan(&ev.Id, &ev.Title, &ev.Category, &ev.Description)
-		batch.Index(fmt.Sprintf("evt-%d", ev.Id), doc{
-			Table: "events", Title: ev.Title, Category: ev.Category, Description: ev.Description,
-		})
-	}
-	rows.Close()
-
-	return bIdx.Batch(batch)
-}
-
-func searchBleve(query, table string) string {
-	if bIdx == nil {
-		return "Search index not ready."
-	}
-
-	q := bleve.NewFuzzyQuery(query)
-	req := bleve.NewSearchRequest(q)
-	req.Size = 10
-	req.Fields = []string{"*"}
-
-	if table != "" && table != "all" {
-		tq := bleve.NewTermQuery(strings.ToLower(table))
-		tq.SetField("table")
-		req.Query = bleve.NewConjunctionQuery(tq, q)
-	}
-
-	res, err := bIdx.Search(req)
-	if err != nil {
-		return "Search error: " + err.Error()
-	}
-	if res.Total == 0 {
-		return "No results found."
-	}
-
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "Found %d result(s):\n\n", res.Total)
-	for i, hit := range res.Hits {
-		tbl, _ := hit.Fields["table"].(string)
-		name, _ := hit.Fields["name"].(string)
-		title, _ := hit.Fields["title"].(string)
-		label := name
-		if label == "" {
-			label = title
+	sb.WriteByte('[')
+	for i, f := range er.Embedding {
+		if i > 0 {
+			sb.WriteByte(',')
 		}
-		fmt.Fprintf(&sb, "[%d] (%s) %s", i+1, strings.ToUpper(tbl), label)
-		for _, k := range []string{"disposition", "location", "category", "description", "notes", "secrets", "enemies"} {
-			if v, ok := hit.Fields[k].(string); ok && v != "" {
-				sb.WriteString(fmt.Sprintf(" %s=%s", k, v))
-			}
-		}
-		sb.WriteString("\n")
+		fmt.Fprintf(&sb, "%g", f)
 	}
-	return sb.String()
+	sb.WriteByte(']')
+	return sb.String(), nil
 }
+
+type searchResult struct {
+	ChapterTitle string
+	Content      string
+	Score        float64
+}
+
+func handleSearch(w http.ResponseWriter, r *http.Request) {
+	q := r.FormValue("q")
+	if q == "" {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprint(w, `<p class="text-secondary">Enter a query above.</p>`)
+		return
+	}
+
+	emb, err := queryEmbedding(r.Context(), q)
+	if err != nil {
+		http.Error(w, "Embedding error: "+err.Error(), 500)
+		return
+	}
+
+	rows, err := db.Query(r.Context(), `
+		SELECT chapter_title, content,
+		       1 - (embedding <=> $1::vector) AS score
+		FROM chapter_chunks
+		ORDER BY embedding <=> $1::vector
+		LIMIT 5`, emb)
+	if err != nil {
+		http.Error(w, "Search error: "+err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+
+	var results []searchResult
+	for rows.Next() {
+		var sr searchResult
+		if err := rows.Scan(&sr.ChapterTitle, &sr.Content, &sr.Score); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		results = append(results, sr)
+	}
+
+	funcs := template.FuncMap{
+		"pct": func(f float64) string { return fmt.Sprintf("%.0f", f*100) },
+	}
+	tmpl := template.Must(template.New("r").Funcs(funcs).Parse(searchResultsTmpl))
+	w.Header().Set("Content-Type", "text/html")
+	tmpl.Execute(w, results)
+}
+
+var searchResultsTmpl = `
+{{if .}}
+  {{range .}}
+  <div class="card bg-dark border-secondary mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="text-warning">{{.ChapterTitle}}</strong>
+      <span class="badge bg-secondary">{{pct .Score}}% match</span>
+    </div>
+    <div class="card-body text-light" style="white-space:pre-wrap;font-size:.875rem">{{.Content}}</div>
+  </div>
+  {{end}}
+{{else}}
+  <p class="text-secondary">No results found.</p>
+{{end}}`

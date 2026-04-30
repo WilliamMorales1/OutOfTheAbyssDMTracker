@@ -1,6 +1,6 @@
 -- Active: 1777184786331@@127.0.0.1@5432@oota
 
-CREATE TABLE Monsters (
+CREATE IF NOT EXISTS TABLE Monsters (
     id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name        TEXT UNIQUE NOT NULL,
     type        TEXT,
@@ -29,7 +29,7 @@ CREATE TABLE Monsters (
     notes       TEXT
 );
 
-CREATE TABLE EncounterMonsters (
+CREATE IF NOT EXISTS TABLE EncounterMonsters (
     encounter_id BIGINT REFERENCES Encounters(id) ON DELETE CASCADE,
     monster_id   BIGINT REFERENCES Monsters(id)   ON DELETE CASCADE,
     quantity     TEXT NOT NULL DEFAULT '1',
@@ -37,3 +37,7 @@ CREATE TABLE EncounterMonsters (
 );
 
 ALTER TABLE Encounters DROP COLUMN enemies;
+
+-- Run as superuser after creating tables:
+-- GRANT ALL ON TABLE Monsters TO wsm52;
+-- GRANT ALL ON TABLE EncounterMonsters TO wsm52;

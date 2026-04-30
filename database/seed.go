@@ -443,10 +443,10 @@ func seedEncounters(ctx context.Context, conn *pgx.Conn) {
 
 	for _, r := range rows {
 		_, err := conn.Exec(ctx,
-			`INSERT INTO Encounters (name, location, difficulty, status, enemies, levelup, notes)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+			`INSERT INTO Encounters (name, location, difficulty, status, levelup, notes)
+			 VALUES ($1,$2,$3,$4,$5,$6)`,
 			r.name, nullableLocation(r.location), difficultyInt(r.difficulty),
-			r.status, r.enemies, r.ms != "", r.notes)
+			r.status, r.ms != "", r.notes)
 		if err != nil {
 			log.Fatalf("encounter %q: %v", r.name, err)
 		}

@@ -22,8 +22,10 @@ Use the search and sql tools to answer questions about the campaign. Use web_sea
 Database schema:
   Locations(id, name, type, status, danger int 1-5, description, secrets)
   NPCS(id, name, madness int, disposition, location, notes, description)
-  Encounters(id, name, location, difficulty int, status, enemies, levelup bool, notes)
+  Encounters(id, name, location, difficulty int, status, levelup bool, notes)
   Events(id, title, category, description)
+  Monsters(id, name, type, cr, hp, hp_formula, ac, ac_desc, speed, str, dex, con, int_score, wis, cha, saving_throws, damage_resistances, damage_immunities, condition_immunities, senses, languages, traits, actions, legendary_actions, notes)
+  EncounterMonsters(encounter_id, monster_id, quantity)
 
 Always use a tool to look up information before answering. Be concise.`
 
@@ -67,29 +69,6 @@ type chatResp struct {
 }
 
 var tools = []chatTool{
-	{
-		Type: "function",
-		Function: struct {
-			Name        string         `json:"name"`
-			Description string         `json:"description"`
-			Parameters  map[string]any `json:"parameters"`
-		}{
-			Name:        "search",
-			Description: "Full-text fuzzy search across the campaign database.",
-			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"query": map[string]any{"type": "string", "description": "Search text"},
-					"table": map[string]any{
-						"type":        "string",
-						"description": "Table: locations, npcs, encounters, events, or all",
-						"enum":        []string{"locations", "npcs", "encounters", "events", "all"},
-					},
-				},
-				"required": []string{"query", "table"},
-			},
-		},
-	},
 	{
 		Type: "function",
 		Function: struct {
@@ -217,10 +196,6 @@ func executeTool(ctx context.Context, name, argsJSON string) string {
 		return "Error parsing args: " + err.Error()
 	}
 	switch name {
-	case "search":
-		query, _ := args["query"].(string)
-		table, _ := args["table"].(string)
-		return searchBleve(query, table)
 	case "sql":
 		query, _ := args["query"].(string)
 		return execSQL(ctx, query)
@@ -352,12 +327,4 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		`<div class="chat-msg user d-flex justify-content-end"><div class="chat-bubble w-1000">%s</div></div>`+
 			`<div class="chat-msg agent d-flex justify-content-start"><div class="chat-bubble w-1000"><p>%s</p></div></div>`,
 		template.HTMLEscapeString(q), answer)
-}
-
-func handleReindex(w http.ResponseWriter, r *http.Request) {
-	if err := indexAll(); err != nil {
-		http.Error(w, "Reindex failed: "+err.Error(), 500)
-		return
-	}
-	fmt.Fprint(w, "Indexed ✓")
 }
