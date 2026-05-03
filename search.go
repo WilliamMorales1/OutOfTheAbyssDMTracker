@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 )
@@ -35,16 +34,11 @@ func queryEmbedding(ctx context.Context, text string) (string, error) {
 	if err := json.NewDecoder(res.Body).Decode(&er); err != nil {
 		return "", err
 	}
-	var sb strings.Builder
-	sb.WriteByte('[')
+	parts := make([]string, len(er.Embedding))
 	for i, f := range er.Embedding {
-		if i > 0 {
-			sb.WriteByte(',')
-		}
-		fmt.Fprintf(&sb, "%g", f)
+		parts[i] = fmt.Sprintf("%g", f)
 	}
-	sb.WriteByte(']')
-	return sb.String(), nil
+	return "[" + strings.Join(parts, ",") + "]", nil
 }
 
 type searchResult struct {
@@ -67,7 +61,7 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := db.Query(r.Context(), `
+	rows, err := conn.Query(r.Context(), `
 		SELECT chapter_title, content,
 		       1 - (embedding <=> $1::vector) AS score
 		FROM chapter_chunks
@@ -89,25 +83,6 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		results = append(results, sr)
 	}
 
-	funcs := template.FuncMap{
-		"pct": func(f float64) string { return fmt.Sprintf("%.0f", f*100) },
-	}
-	tmpl := template.Must(template.New("r").Funcs(funcs).Parse(searchResultsTmpl))
 	w.Header().Set("Content-Type", "text/html")
-	tmpl.Execute(w, results)
+	SearchResults(results).Render(r.Context(), w)
 }
-
-var searchResultsTmpl = `
-{{if .}}
-  {{range .}}
-  <div class="card bg-dark border-secondary mb-3">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <strong class="text-warning">{{.ChapterTitle}}</strong>
-      <span class="badge bg-secondary">{{pct .Score}}% match</span>
-    </div>
-    <div class="card-body text-light" style="white-space:pre-wrap;font-size:.875rem">{{.Content}}</div>
-  </div>
-  {{end}}
-{{else}}
-  <p class="text-secondary">No results found.</p>
-{{end}}`

@@ -1,1 +1,2 @@
-database/
+db/
+templates_templ.go

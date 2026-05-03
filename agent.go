@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"net/url"
@@ -45,13 +44,15 @@ type toolCall struct {
 	} `json:"function"`
 }
 
+type toolFunction struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Parameters  map[string]any `json:"parameters"`
+}
+
 type chatTool struct {
-	Type     string `json:"type"`
-	Function struct {
-		Name        string         `json:"name"`
-		Description string         `json:"description"`
-		Parameters  map[string]any `json:"parameters"`
-	} `json:"function"`
+	Type     string       `json:"type"`
+	Function toolFunction `json:"function"`
 }
 
 type chatReq struct {
@@ -69,70 +70,47 @@ type chatResp struct {
 }
 
 var tools = []chatTool{
-	{
-		Type: "function",
-		Function: struct {
-			Name        string         `json:"name"`
-			Description string         `json:"description"`
-			Parameters  map[string]any `json:"parameters"`
-		}{
-			Name:        "sql",
-			Description: "Run a read-only SQL SELECT query against PostgreSQL.",
-			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"query": map[string]any{"type": "string", "description": "SQL SELECT statement"},
-				},
-				"required": []string{"query"},
+	{Type: "function", Function: toolFunction{
+		Name:        "sql",
+		Description: "Run a read-only SQL SELECT query against PostgreSQL.",
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"query": map[string]any{"type": "string", "description": "SQL SELECT statement"},
 			},
+			"required": []string{"query"},
 		},
-	},
-	{
-		Type: "function",
-		Function: struct {
-			Name        string         `json:"name"`
-			Description string         `json:"description"`
-			Parameters  map[string]any `json:"parameters"`
-		}{
-			Name:        "web_search",
-			Description: "Search the web for general information not in the campaign database.",
-			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"query": map[string]any{"type": "string", "description": "Search query"},
-				},
-				"required": []string{"query"},
+	}},
+	{Type: "function", Function: toolFunction{
+		Name:        "web_search",
+		Description: "Search the web for general information not in the campaign database.",
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"query": map[string]any{"type": "string", "description": "Search query"},
 			},
+			"required": []string{"query"},
 		},
-	},
-	{
-		Type: "function",
-		Function: struct {
-			Name        string         `json:"name"`
-			Description string         `json:"description"`
-			Parameters  map[string]any `json:"parameters"`
-		}{
-			Name:        "dnd_lookup",
-			Description: "Look up D&D 5e rules data (monsters, spells, equipment, classes, etc.) from the official 5e API.",
-			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"category": map[string]any{
-						"type":        "string",
-						"description": "Resource category, e.g. monsters, spells, equipment, magic-items, classes, races, conditions, damage-types",
-					},
-					"index": map[string]any{
-						"type":        "string",
-						"description": "Specific resource slug (e.g. 'aboleth', 'fireball'). Omit to list all in category.",
-					},
+	}},
+	{Type: "function", Function: toolFunction{
+		Name:        "dnd_lookup",
+		Description: "Look up D&D 5e rules data (monsters, spells, equipment, classes, etc.) from the official 5e API.",
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"category": map[string]any{
+					"type":        "string",
+					"description": "Resource category, e.g. monsters, spells, equipment, magic-items, classes, races, conditions, damage-types",
 				},
-				"required": []string{"category"},
+				"index": map[string]any{
+					"type":        "string",
+					"description": "Specific resource slug (e.g. 'aboleth', 'fireball'). Omit to list all in category.",
+				},
 			},
+			"required": []string{"category"},
 		},
-	},
+	}},
 }
-
-func initAI() {}
 
 func ollama(ctx context.Context, messages []chatMsg) (*chatResp, error) {
 	body, _ := json.Marshal(chatReq{
@@ -274,7 +252,7 @@ func execSQL(ctx context.Context, query string) string {
 	if !strings.HasPrefix(q, "SELECT") {
 		return "Error: only SELECT queries allowed."
 	}
-	rows, err := db.Query(ctx, query)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
 		return "Query error: " + err.Error()
 	}
@@ -320,11 +298,9 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html")
 	answer = strings.ReplaceAll(answer, "\n\n", "</p><p>")
 	answer = strings.ReplaceAll(answer, "\n", "<br>")
-	fmt.Fprintf(w,
-		`<div class="chat-msg user d-flex justify-content-end"><div class="chat-bubble w-1000">%s</div></div>`+
-			`<div class="chat-msg agent d-flex justify-content-start"><div class="chat-bubble w-1000"><p>%s</p></div></div>`,
-		template.HTMLEscapeString(q), answer)
+	answer = "<p>" + answer + "</p>"
+	w.Header().Set("Content-Type", "text/html")
+	ChatMessage(q, answer).Render(r.Context(), w)
 }

@@ -1,0 +1,336 @@
+package main
+
+import (
+	"fmt"
+	"oota/db"
+)
+
+type tabDef struct {
+	Name string
+	Path string
+}
+
+var allTabs = []tabDef{
+	{"Sessions", "sessions"},
+	{"Locations", "locations"},
+	{"NPCs", "npcs"},
+	{"Encounters", "encounters"},
+	{"Monsters", "monsters"},
+	{"Events", "events"},
+	{"Ask Agent", "chat"},
+	{"Lore Search", "search"},
+}
+
+templ PanelTabs(active string) {
+	<div id="tabs" hx-swap-oob="true">
+		for _, t := range allTabs {
+			if t.Path == active {
+				<button class="tab active" hx-get={ "/panel/" + t.Path } hx-target="#panel" hx-swap="innerHTML">{ t.Name }</button>
+			} else {
+				<button class="tab" hx-get={ "/panel/" + t.Path } hx-target="#panel" hx-swap="innerHTML">{ t.Name }</button>
+			}
+		}
+	</div>
+}
+
+templ ChatPanel() {
+	<div id="chat-history"></div>
+	<form
+		hx-post="/chat"
+		hx-target="#chat-history"
+		hx-swap="beforeend"
+		hx-on:after-request="this.reset()"
+		hx-indicator="#chat-spinner"
+		class="mt-3"
+	>
+		<div class="input-group">
+			<input
+				name="q"
+				type="text"
+				class="form-control bg-dark text-light border-secondary"
+				placeholder="Ask anything about the campaign..."
+				required
+			/>
+			<button class="btn btn-primary" type="submit">Ask</button>
+		</div>
+		<div class="mt-2">
+			<span id="chat-spinner" class="htmx-indicator spinner-border spinner-border-sm text-warning" role="status"></span>
+			<span id="chat-spinner-text" class="htmx-indicator ms-2 text-secondary small">Thinking...</span>
+		</div>
+	</form>
+}
+
+templ SearchPanel() {
+	<form hx-get="/search" hx-target="#results" hx-swap="innerHTML" hx-indicator="#search-spinner">
+		<div class="input-group mb-3">
+			<input
+				name="q"
+				type="text"
+				class="form-control bg-dark text-light border-secondary"
+				placeholder="Search lore semantically... (e.g. 'drow priestess tactics')"
+				required
+			/>
+			<button class="btn btn-warning" type="submit">Search</button>
+		</div>
+		<span id="search-spinner" class="htmx-indicator spinner-border spinner-border-sm text-warning me-2"></span>
+		<span class="htmx-indicator text-secondary small">Searching...</span>
+	</form>
+	<div id="results" class="mt-3"></div>
+}
+
+templ DefaultPanel(endpoint string) {
+	<div id="results" hx-get={ endpoint } hx-trigger="load" hx-swap="innerHTML"></div>
+}
+
+templ SessionsTable(sessions []db.Session) {
+	<div class="table-responsive">
+		if len(sessions) > 0 {
+			<table class="table table-dark table-hover table-bordered datatable w-100">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Title</th>
+						<th>Chapters</th>
+						<th>Levels</th>
+						<th>Summary</th>
+						<th>Key Encounters</th>
+						<th>Key NPCs</th>
+						<th>DM Notes</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, s := range sessions {
+						<tr>
+							<td><strong>{ itoa(s.SessionNum) }</strong></td>
+							<td><strong>{ s.Title }</strong></td>
+							<td><span class="badge bg-secondary">{ s.Chapters.String }</span></td>
+							<td>
+								<span class="badge bg-info text-dark">
+									{ itoa(s.LevelStart.Int32) }
+									if s.LevelStart.Int32 != s.LevelEnd.Int32 {
+										→{ itoa(s.LevelEnd.Int32) }
+									}
+								</span>
+							</td>
+							<td>{ s.Summary.String }</td>
+							<td>{ s.KeyEncounters.String }</td>
+							<td>{ s.KeyNpcs.String }</td>
+							<td>{ s.DmNotes.String }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		} else {
+			<p class="empty p-3">
+				No sessions found. Run: <code>go run ./database/seed_sessions.go</code>
+			</p>
+		}
+	</div>
+}
+
+templ MonstersTmpl(monsters []db.ListMonstersRow) {
+	<div class="table-responsive">
+		if len(monsters) > 0 {
+			<table class="table table-dark table-hover table-bordered datatable w-100">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>CR</th>
+						<th>HP</th>
+						<th>AC</th>
+						<th>Speed</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, m := range monsters {
+						<tr>
+							<td><strong>{ m.Name }</strong></td>
+							<td>{ m.Type.String }</td>
+							<td>{ m.Cr.String }</td>
+							<td>
+								{ itoa(m.Hp.Int32) }
+								if m.HpFormula.Valid {
+									<small class="text-secondary">({ m.HpFormula.String })</small>
+								}
+							</td>
+							<td>
+								{ itoa(m.Ac.Int32) }
+								if m.AcDesc.Valid {
+									<small class="text-secondary">({ m.AcDesc.String })</small>
+								}
+							</td>
+							<td>{ m.Speed.String }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		} else {
+			<p class="empty p-3">
+				No monsters found. Run: <code>go run ./database/seed_monsters.go</code>
+			</p>
+		}
+	</div>
+}
+
+templ LocationsTable(locs []db.ListLocationsRow) {
+	<div class="table-responsive">
+		<table class="table table-dark table-hover table-bordered datatable w-100">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Type</th>
+					<th>Danger</th>
+					<th>Description</th>
+					<th>Secrets</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, l := range locs {
+					<tr>
+						<td><strong>{ l.Name.String }</strong></td>
+						<td>{ l.Type.String }</td>
+						<td data-order={ itoa(l.Danger.Int32) }>{ dangerStars(l.Danger.Int32) }</td>
+						<td>{ l.Description.String }</td>
+						<td>{ l.Secrets.String }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ NPCsTable(npcs []db.ListNPCsRow) {
+	<div class="table-responsive">
+		if len(npcs) > 0 {
+			<table class="table table-dark table-hover table-bordered datatable w-100">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Madness</th>
+						<th>Disposition</th>
+						<th>Location</th>
+						<th>Description</th>
+						<th>Notes</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, n := range npcs {
+						<tr>
+							<td><strong>{ n.Name.String }</strong></td>
+							<td class="danger" data-order={ itoa(n.Madness.Int32) }>{ dangerStars(n.Madness.Int32) }</td>
+							<td><span class={ "badge disp-" + n.Disposition.String }>{ n.Disposition.String }</span></td>
+							<td>{ n.Location.String }</td>
+							<td>{ n.Description.String }</td>
+							<td>{ n.Notes.String }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		} else {
+			<p class="empty">No NPCs found.</p>
+		}
+	</div>
+}
+
+templ EncountersTable(encs []encounterRow) {
+	<div class="table-responsive">
+		if len(encs) > 0 {
+			<table class="table table-dark table-hover table-bordered datatable w-100">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Chapter</th>
+						<th>Location</th>
+						<th>Difficulty</th>
+						<th>Monsters</th>
+						<th>Level Up</th>
+						<th>Notes</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, e := range encs {
+						<tr>
+							<td><strong>{ e.Name.String }</strong></td>
+							<td>{ itoa(e.Chapter.Int32) }</td>
+							<td>{ e.Location }</td>
+							<td class="danger" data-order={ itoa(e.Difficulty.Int32) }>{ dangerStars(e.Difficulty.Int32) }</td>
+							<td>
+								for _, m := range e.Monsters {
+									<span class="badge bg-secondary me-1 mb-1">
+										if m.Quantity != "1" {
+											{ m.Quantity }×{ " " }
+										}
+										{ m.Name }<small class="ms-1 text-warning">CR{ m.Cr.String }</small>
+									</span>
+								}
+							</td>
+							<td>
+								if e.Levelup.Bool {
+									<span class="badge bg-success">✓</span>
+								}
+							</td>
+							<td>{ e.Notes.String }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		} else {
+			<p class="empty p-3">No encounters found.</p>
+		}
+	</div>
+}
+
+templ EventsTable(evts []db.Event) {
+	<div class="table-responsive">
+		if len(evts) > 0 {
+			<table class="table table-dark table-hover table-bordered datatable w-100">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Category</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, e := range evts {
+						<tr>
+							<td><strong>{ e.Title.String }</strong></td>
+							<td><span class={ "badge cat-" + e.Category.String }>{ e.Category.String }</span></td>
+							<td>{ e.Description.String }</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		} else {
+			<p class="empty">No events found.</p>
+		}
+	</div>
+}
+
+templ SearchResults(results []searchResult) {
+	if len(results) > 0 {
+		for _, r := range results {
+			<div class="card bg-dark border-secondary mb-3">
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<strong class="text-warning">{ r.ChapterTitle }</strong>
+					<span class="badge bg-secondary">{ fmt.Sprintf("%.0f", r.Score*100) }% match</span>
+				</div>
+				<div class="card-body text-light" style="white-space:pre-wrap;font-size:.875rem">{ r.Content }</div>
+			</div>
+		}
+	} else {
+		<p class="text-secondary">No results found.</p>
+	}
+}
+
+templ ChatMessage(question, answer string) {
+	<div class="chat-msg user d-flex justify-content-end">
+		<div class="chat-bubble w-1000">{ question }</div>
+	</div>
+	<div class="chat-msg agent d-flex justify-content-start">
+		<div class="chat-bubble w-1000">
+			@templ.Raw(answer)
+		</div>
+	</div>
+}
