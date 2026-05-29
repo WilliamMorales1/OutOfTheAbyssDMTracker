@@ -1,0 +1,1 @@
+ALTER TABLE Sessions DROP COLUMN IF EXISTS checkpoint;

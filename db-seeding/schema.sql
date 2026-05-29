@@ -83,5 +83,6 @@ CREATE TABLE Sessions (
     summary        TEXT,
     key_encounters TEXT,
     key_npcs       TEXT,
-    dm_notes       TEXT
+    dm_notes       TEXT,
+    checkpoint     TEXT
 );

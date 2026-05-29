@@ -8,6 +8,21 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css">
+  <style>
+    /* Fix sort icon misalignment on long header text */
+    table.dataTable thead th {
+      white-space: nowrap;
+    }
+    table.dataTable thead th .dt-column-title {
+      display: inline;
+    }
+    table.dataTable thead th .dt-column-order {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 0.25rem;
+      position: static;
+    }
+  </style>
 </head>
 
 <body class="bg-dark text-light">
@@ -52,15 +67,19 @@
   <script src="https://cdn.datatables.net/2.0.5/js/dataTables.bootstrap5.js"></script>
 
   <script>
-    document.body.addEventListener('htmx:afterSwap', function (evt) {
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+      const el = evt.detail.elt;
+      if (el && el.tagName === 'FORM') {
+        el.reset();
+      }
+    });
+
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
       if (evt.detail.target.id === "results" || evt.detail.target.id === "panel") {
         $('.datatable').DataTable({
           destroy: true,
           pageLength: 10,
-          language: {
-            searchPlaceholder: "Filter columns...",
-            search: ""
-          }
+          language: { searchPlaceholder: "Filter columns...", search: "" }
         });
       }
     });

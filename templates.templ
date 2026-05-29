@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"oota/db"
+	"strconv"
 )
 
 type tabDef struct {
@@ -39,7 +40,6 @@ templ ChatPanel() {
 		hx-post="/chat"
 		hx-target="#chat-history"
 		hx-swap="beforeend"
-		hx-on:after-request="this.reset()"
 		hx-indicator="#chat-spinner"
 		class="mt-3"
 	>
@@ -95,6 +95,7 @@ templ SessionsTable(sessions []db.Session) {
 						<th>Summary</th>
 						<th>Key Encounters</th>
 						<th>Key NPCs</th>
+						<th>Checkpoint</th>
 						<th>DM Notes</th>
 					</tr>
 				</thead>
@@ -115,6 +116,7 @@ templ SessionsTable(sessions []db.Session) {
 							<td>{ s.Summary.String }</td>
 							<td>{ s.KeyEncounters.String }</td>
 							<td>{ s.KeyNpcs.String }</td>
+							<td>{ s.Checkpoint.String }</td>
 							<td>{ s.DmNotes.String }</td>
 						</tr>
 					}
@@ -333,4 +335,8 @@ templ ChatMessage(question, answer string) {
 			@templ.Raw(answer)
 		</div>
 	</div>
+}
+
+func itoa(n int32) string {
+	return strconv.Itoa(int(n))
 }

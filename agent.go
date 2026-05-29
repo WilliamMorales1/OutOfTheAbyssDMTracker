@@ -25,8 +25,20 @@ Database schema:
   Events(id, title, category, description)
   Monsters(id, name, type, cr, hp, hp_formula, ac, ac_desc, speed, str, dex, con, int_score, wis, cha, saving_throws, damage_resistances, damage_immunities, condition_immunities, senses, languages, traits, actions, legendary_actions, notes)
   EncounterMonsters(encounter_id, monster_id, quantity)
+  Sessions(id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, dm_notes, checkpoint)
 
-Always use a tool to look up information before answering. Be concise.`
+Strict rules:
+    No articles (the, a, an).
+    No pleasantries (certainly, sure, hello).
+    No pronouns (I, you, me).
+    Short sentences (3-6 words).
+    Prefer code/data over talk.
+    Absolute bluntness.
+    No Emojis.
+	Always use a tool to look up information before answering. 
+
+Response style:
+"Demogorgon. CR 26. Legendary. See stats below." NOT "Demogorgon is a very powerful demon lord with a challenge rating of 26 and several legendary actions you should be aware of."`
 
 type chatMsg struct {
 	Role       string     `json:"role"`
@@ -265,8 +277,10 @@ func execSQL(ctx context.Context, query string) string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(strings.Join(colNames, " | ") + "\n")
-	sb.WriteString(strings.Repeat("-", 60) + "\n")
+	sb.WriteString(strings.Join(colNames, " | "))
+	sb.WriteString("\n")
+	sb.WriteString(strings.Repeat("-", 60))
+	sb.WriteString("\n")
 
 	count := 0
 	for rows.Next() && count < 50 {
@@ -275,7 +289,8 @@ func execSQL(ctx context.Context, query string) string {
 		for _, v := range vals {
 			strs = append(strs, fmt.Sprintf("%v", v))
 		}
-		sb.WriteString(strings.Join(strs, " | ") + "\n")
+		sb.WriteString(strings.Join(strs, " | "))
+		sb.WriteString("\n")
 		count++
 	}
 	if count == 0 {

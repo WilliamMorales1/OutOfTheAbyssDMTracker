@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"oota/db"
@@ -78,7 +77,7 @@ func main() {
 	mux.HandleFunc("/search", handleSearch)
 
 	log.Println("Listening on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", logRequests(mux)))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", logRequests(mux)))
 }
 
 func serveHTML(w http.ResponseWriter, r *http.Request) {
@@ -159,8 +158,4 @@ func dangerStars(d int32) string {
 	}
 	filled := min(d, 5)
 	return strings.Repeat("★", int(filled)) + strings.Repeat("☆", int(5-filled))
-}
-
-func itoa(n int32) string {
-	return strconv.Itoa(int(n))
 }
