@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"oota/db"
@@ -75,6 +76,7 @@ func main() {
 	mux.HandleFunc("/monsters", handleMonsters)
 	mux.HandleFunc("/sessions", handleSessions)
 	mux.HandleFunc("/maps", handleMaps)
+	mux.HandleFunc("/marker-card", handleMarkerCard)
 	mux.HandleFunc("/chat", handleChat)
 	mux.HandleFunc("/search", handleSearch)
 
@@ -94,8 +96,6 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		ChatPanel().Render(ctx, w)
 	case "search":
 		SearchPanel().Render(ctx, w)
-	case "maps":
-		MapsPanel().Render(ctx, w)
 	default:
 		DefaultPanel("/"+tab).Render(ctx, w)
 	}
@@ -103,7 +103,27 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 
 func handleMaps(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	MapsPanel().Render(r.Context(), w)
+	MapsPanel(gameMaps).Render(r.Context(), w)
+}
+
+func handleMarkerCard(w http.ResponseWriter, r *http.Request) {
+	mapID := r.URL.Query().Get("map")
+	idx := r.URL.Query().Get("i")
+
+	for _, gm := range gameMaps {
+		if gm.ID != mapID {
+			continue
+		}
+
+		for _, m := range gm.Markers {
+			if strconv.Itoa(m.I) == idx {
+				MarkerCard(m).Render(r.Context(), w)
+				return
+			}
+		}
+	}
+
+	http.NotFound(w, r)
 }
 
 func handleSessions(w http.ResponseWriter, r *http.Request) {

@@ -6,6 +6,224 @@ import (
 	"strconv"
 )
 
+templ MarkerCard(m Marker) {
+	<div class="dt">{ m.Title }</div>
+	<div class="db">{ m.Body }</div>
+}
+
+templ MapsPanel(gameMaps []GameMap) {
+	<div>
+		<style>
+			.sm {
+				position: relative;
+				background: #080910;
+				width: 100%;
+				margin-bottom: 16px;
+			}
+
+			.dc {
+				position: fixed;
+				display: none;
+				background: #0d0e16;
+				border: 1px solid #352c10;
+				padding: 12px;
+				width: max-content;
+				max-width: min(320px, 85vw);
+				box-sizing: border-box;
+				white-space: normal;
+				word-wrap: break-word;
+				pointer-events: none;
+				z-index: 100;
+				border-radius: 8px;
+				box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+			}
+
+			svg.smap {
+				display: block;
+				width: 100%;
+			}
+
+			.loc {
+				cursor: pointer;
+				outline: none;
+			}
+
+			.loc .pi {
+				fill: #231d09;
+				stroke: #8a6428;
+				stroke-width: 1.5;
+				transition: fill .15s, stroke .15s;
+			}
+
+			.loc .pn {
+				fill: #c89030;
+				transition: fill .15s;
+			}
+
+			.loc:hover .pi,
+			.loc:focus .pi {
+				fill: #352c10;
+				stroke: #e0b040;
+				stroke-width: 2;
+			}
+
+			.loc:hover .pn,
+			.loc:focus .pn {
+				fill: #f5d84a;
+			}
+
+			.dt {
+				font-family: 'Trajan Pro', serif;
+				font-size: 1.25rem;
+				color: #f0d080;
+				margin-bottom: 10px;
+			}
+
+			.db {
+				line-height: 1.5;
+				color: #d6d6d6;
+			}
+
+			.coordDisplay {
+				position:fixed;
+				display:none;
+				color:#f0d080;
+				font-family:monospace;
+				font-size:0.85rem;
+				background:rgba(13,14,22,0.85);
+				padding:2px 7px;
+				border-radius:4px;
+				pointer-events:none;
+				z-index:200;"
+			}
+		</style>
+		<div style="margin-bottom:10px;">
+			<button onclick="toggleCoordinateTracking()">
+				Toggle Coordinate Tooltip
+			</button>
+		</div>
+		<div id="coordDisplay" class="coordDisplay"></div>
+		for _, gm := range gameMaps {
+			<div class="sm" id={ gm.ID }>
+				<svg
+					class="smap"
+					viewBox={ gm.VB }
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<image
+						href={ gm.Img }
+						width={ gm.Width() }
+						height={ gm.Height() }
+					></image>
+					for _, marker := range gm.Markers {
+						<g
+							class="loc"
+							tabindex="0"
+							data-mapid={ gm.ID }
+							data-mx={ strconv.Itoa(marker.X) }
+							data-my={ strconv.Itoa(marker.Y) }
+							hx-get={ "/marker-card?map=" + gm.ID + "&i=" + strconv.Itoa(marker.I) }
+							hx-trigger="mouseenter"
+							hx-target={ "#dc-" + gm.ID }
+							hx-swap="innerHTML"
+							onmouseenter="var c=document.getElementById('dc-'+this.dataset.mapid);if(c)c.style.display='block';"
+							onmouseleave="var c=document.getElementById('dc-'+this.dataset.mapid);if(c)c.style.display='none';"
+						>
+							<circle class="pi" r="12"></circle>
+							<text
+								class="pn"
+								text-anchor="middle"
+								dominant-baseline="middle"
+								font-size="12"
+								font-weight="bold"
+							>
+								{ strconv.Itoa(marker.I) }
+							</text>
+						</g>
+					}
+				</svg>
+				<div class="dc" id={ "dc-" + gm.ID }></div>
+			</div>
+		}
+		<script>
+			function updateMarkerScales() {
+				document.querySelectorAll("svg.smap").forEach(svg => {
+					const ctm = svg.getScreenCTM();
+					if (!ctm) return;
+					const scale = Math.sqrt(ctm.a * ctm.a + ctm.b * ctm.b);
+					if (!scale) return;
+					const inv = 1 / scale;
+					svg.querySelectorAll(".loc").forEach(g => {
+						const mx = g.dataset.mx;
+						const my = g.dataset.my;
+						g.setAttribute("transform", `translate(${mx},${my}) scale(${inv})`);
+					});
+				});
+			}
+
+			window.addEventListener("resize", updateMarkerScales);
+			document.addEventListener("htmx:afterSettle", updateMarkerScales);
+			requestAnimationFrame(updateMarkerScales);
+
+			let coordTrackingEnabled = false;
+
+			function toggleCoordinateTracking() {
+				coordTrackingEnabled = !coordTrackingEnabled;
+			}
+
+			document.addEventListener("mousemove", (e) => {
+				const sm = e.target.closest(".sm");
+				if (!sm) return;
+
+				const card = sm.querySelector(".dc");
+				if (!card || card.style.display !== "block") return;
+
+				const pad = 16;
+				let x = e.clientX + pad;
+				let y = e.clientY + pad;
+
+				card.style.left = x + "px";
+				card.style.top = y + "px";
+
+				const cw = card.offsetWidth;
+				const ch = card.offsetHeight;
+				const vw = window.innerWidth;
+				const vh = window.innerHeight;
+
+				if (x + cw > vw) x = e.clientX - cw - pad;
+				if (y + ch > vh) y = e.clientY - ch - pad;
+
+				card.style.left = Math.max(0, x) + "px";
+				card.style.top = Math.max(0, y) + "px";
+			});
+
+			document.addEventListener("mousemove", (e) => {
+				const disp = document.getElementById("coordDisplay");
+				if (!coordTrackingEnabled) { disp.style.display = "none"; return; }
+
+				const svg = e.target.closest("svg.smap");
+				if (!svg) { disp.style.display = "none"; return; }
+
+				const pt = svg.createSVGPoint();
+				pt.x = e.clientX;
+				pt.y = e.clientY;
+
+				const cursor = pt.matrixTransform(svg.getScreenCTM().inverse());
+				disp.textContent = `${Math.round(cursor.x)}, ${Math.round(cursor.y)}`;
+				disp.style.display = "block";
+
+				const pad = 14;
+				let x = e.clientX + pad;
+				let y = e.clientY + pad;
+				if (x + disp.offsetWidth > window.innerWidth) x = e.clientX - disp.offsetWidth - pad;
+				if (y + disp.offsetHeight > window.innerHeight) y = e.clientY - disp.offsetHeight - pad;
+				disp.style.left = Math.max(0, x) + "px";
+				disp.style.top = Math.max(0, y) + "px";
+			});
+		</script>
+	</div>
+}
+
 type tabDef struct {
 	Name string
 	Path string
