@@ -87,13 +87,11 @@ migrate -path migrations -database "postgres://user:pass@localhost/oota?sslmode=
 ```
 .
 ├── main.go              # HTTP server, routes, migration runner
-├── agent.go             # LLM chat handler and tool loop
-├── search.go            # Vector embedding search
+├── agent.go             # LLM chat handler, tool loop, vector embedding search
 ├── templates.templ      # UI templates (templ source)
 ├── templates_templ.go   # Generated template code
 ├── db/                  # sqlc-generated DB layer
-├── db-seeding/		 # SQL schema and queries
+├── db-seeding/		 # SQL schema and queries + sqlc config
 ├── migrations/          # golang-migrate SQL migration files
-├── sqlc.yaml            # sqlc config
 └── oota.html            # Single-page shell
 ```

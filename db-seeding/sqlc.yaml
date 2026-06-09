@@ -1,10 +1,10 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "db-seeding/queries.sql"
-    schema: "db-seeding/schema.sql"
+    queries: "queries.sql"
+    schema: "schema.sql"
     gen:
       go:
         package: "db"
-        out: "db"
+        out: "../db"
         sql_package: "pgx/v4"
