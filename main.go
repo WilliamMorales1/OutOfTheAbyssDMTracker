@@ -65,7 +65,8 @@ func main() {
 	q = db.New(conn)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", serveHTML)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "oota.html") })
+	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("./images"))))
 	mux.HandleFunc("/panel/", handlePanel)
 	mux.HandleFunc("/locations", handleLocations)
 	mux.HandleFunc("/npcs", handleNPCs)
@@ -73,15 +74,12 @@ func main() {
 	mux.HandleFunc("/events", handleEvents)
 	mux.HandleFunc("/monsters", handleMonsters)
 	mux.HandleFunc("/sessions", handleSessions)
+	mux.HandleFunc("/maps", handleMaps)
 	mux.HandleFunc("/chat", handleChat)
 	mux.HandleFunc("/search", handleSearch)
 
 	log.Println("Listening on http://localhost:8080")
-	log.Fatal(http.ListenAndServe("0.0.0.0:8080", logRequests(mux)))
-}
-
-func serveHTML(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "oota.html")
+	log.Fatal(http.ListenAndServe("localhost:8080", logRequests(mux)))
 }
 
 func handlePanel(w http.ResponseWriter, r *http.Request) {
@@ -96,9 +94,16 @@ func handlePanel(w http.ResponseWriter, r *http.Request) {
 		ChatPanel().Render(ctx, w)
 	case "search":
 		SearchPanel().Render(ctx, w)
+	case "maps":
+		MapsPanel().Render(ctx, w)
 	default:
 		DefaultPanel("/"+tab).Render(ctx, w)
 	}
+}
+
+func handleMaps(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	MapsPanel().Render(r.Context(), w)
 }
 
 func handleSessions(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +154,7 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMonsters(w http.ResponseWriter, r *http.Request) {
-	renderWith(w, r, q.ListMonsters, MonstersTmpl)
+	renderWith(w, r, q.ListMonsters, MonstersTable)
 }
 
 func dangerStars(d int32) string {

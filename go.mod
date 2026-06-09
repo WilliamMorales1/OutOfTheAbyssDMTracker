@@ -1,15 +1,15 @@
 module oota
 
-go 1.26.2
+go 1.26.4
 
 require (
 	github.com/a-h/templ v0.3.1001
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.3
 )
 
 require (
-	github.com/golang-migrate/migrate/v4 v4.19.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

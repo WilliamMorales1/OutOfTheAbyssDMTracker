@@ -6,7 +6,7 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "oota",
+            "name": "OOTA",
             "database": "oota",
             "username": "postgres"
         }
