@@ -71,6 +71,9 @@ INSERT INTO NPCS (name, disposition, location, madness, description, notes) VALU
 ('Triel Baenre', 'hostile', 'Menzoberranzan', 0,
  'Matron Mother of House Baenre and effective ruler of Menzoberranzan. Cold, calculating, utterly ruthless. Views the demon lord incursion as a political problem to be managed, not a catastrophe to be stopped.',
  'Will meet with the party if they reach Menzoberranzan through proper channels. Wants the demon lords gone but is unwilling to appear weak or indebted to outsiders. Key to the political maneuvering in Ch. 15.'),
+('Droki', 'hostile', 'Gracklstugh', 3,
+ 'Droki hates everyone in general and surfacers in particular. He gnashes his teeth if he has to address the characters, taking every opportunity to be insulting and misleading. If the characters look through his satchel while still conscious, he throws a tantrum until knocked unconscious.',
+ 'Droki is also obsessed with things happening where and when they should. If captured before he runs his errands, he constantly complains about the characters altering fate by delaying him, and a good tactic to pressure him is to threaten to hold him indefinitely. He prefers to escape than to fight, except if the characters take his satchel.'),
 ('Grazilaxx', 'neutral', 'Mantol-Derith', 0,
  'A mind flayer who has rejected the illithid collective and travels alone as a merchant of information. Appears calm and businesslike. Trades knowledge for knowledge.',
  'Useful recurring information broker in Part 2. Knows the locations of several demon lords and the routes to Vizeran''s tower. Cannot be fully trusted - will sell the party''s information to others. CR 7.');
