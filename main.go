@@ -18,6 +18,40 @@ import (
 
 var conn *pgx.Conn
 var q *db.Queries
+var gameMaps []GameMap
+
+func loadGameMaps(ctx context.Context) error {
+	rows, err := conn.Query(ctx, `SELECT id, img, vb FROM GameMaps ORDER BY id`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var maps []GameMap
+	for rows.Next() {
+		var gm GameMap
+		if err := rows.Scan(&gm.ID, &gm.Img, &gm.VB); err != nil {
+			return err
+		}
+		maps = append(maps, gm)
+	}
+	for i, gm := range maps {
+		mrows, err := conn.Query(ctx, `SELECT i, x, y, title, body FROM MapMarkers WHERE map_id=$1 ORDER BY i`, gm.ID)
+		if err != nil {
+			return err
+		}
+		for mrows.Next() {
+			var m Marker
+			if err := mrows.Scan(&m.I, &m.X, &m.Y, &m.Title, &m.Body); err != nil {
+				mrows.Close()
+				return err
+			}
+			maps[i].Markers = append(maps[i].Markers, m)
+		}
+		mrows.Close()
+	}
+	gameMaps = maps
+	return nil
+}
 
 type encounterRow struct {
 	db.ListEncountersRow
@@ -64,6 +98,9 @@ func main() {
 	}
 	defer conn.Close(ctx)
 	q = db.New(conn)
+	if err := loadGameMaps(ctx); err != nil {
+		log.Fatalf("load maps: %v", err)
+	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "oota.html") })

@@ -4,7 +4,38 @@ import (
 	"fmt"
 	"oota/db"
 	"strconv"
+	"strings"
 )
+
+type Marker struct {
+	I     int
+	X, Y  int
+	Title string
+	Body  string
+}
+
+type GameMap struct {
+	ID      string
+	Img     string
+	VB      string
+	Markers []Marker
+}
+
+func (gm GameMap) Width() string {
+	p := strings.Fields(gm.VB)
+	if len(p) == 4 {
+		return p[2]
+	}
+	return "100%"
+}
+
+func (gm GameMap) Height() string {
+	p := strings.Fields(gm.VB)
+	if len(p) == 4 {
+		return p[3]
+	}
+	return "100%"
+}
 
 templ MarkerCard(m Marker) {
 	<div class="dt">{ m.Title }</div>
