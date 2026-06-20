@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"oota/internal/db"
@@ -34,7 +35,7 @@ func listHandler[T, R any](list func(ctx context.Context) ([]T, error), toDTO fu
 	}
 }
 
-func stars(n int32) string {
+func stars(n int64) string {
 	if n < 0 {
 		n = 0
 	}
@@ -45,11 +46,11 @@ func stars(n int32) string {
 }
 
 type sessionDTO struct {
-	SessionNum    int32  `json:"sessionNum"`
+	SessionNum    int64  `json:"sessionNum"`
 	Title         string `json:"title"`
 	Chapters      string `json:"chapters"`
-	LevelStart    int32  `json:"levelStart"`
-	LevelEnd      int32  `json:"levelEnd"`
+	LevelStart    int64  `json:"levelStart"`
+	LevelEnd      int64  `json:"levelEnd"`
 	Summary       string `json:"summary"`
 	KeyEncounters string `json:"keyEncounters"`
 	KeyNpcs       string `json:"keyNpcs"`
@@ -61,8 +62,8 @@ func sessionToDTO(s db.Session) sessionDTO {
 		SessionNum:    s.SessionNum,
 		Title:         s.Title,
 		Chapters:      s.Chapters.String,
-		LevelStart:    s.LevelStart.Int32,
-		LevelEnd:      s.LevelEnd.Int32,
+		LevelStart:    s.LevelStart.Int64,
+		LevelEnd:      s.LevelEnd.Int64,
 		Summary:       s.Summary.String,
 		KeyEncounters: s.KeyEncounters.String,
 		KeyNpcs:       s.KeyNpcs.String,
@@ -77,7 +78,7 @@ func handleAPISessions(w http.ResponseWriter, r *http.Request) {
 type locationDTO struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
-	Danger      int32  `json:"danger"`
+	Danger      int64  `json:"danger"`
 	DangerStars string `json:"dangerStars"`
 	Description string `json:"description"`
 	Secrets     string `json:"secrets"`
@@ -87,8 +88,8 @@ func locationToDTO(l db.ListLocationsRow) locationDTO {
 	return locationDTO{
 		Name:        l.Name.String,
 		Type:        l.Type.String,
-		Danger:      l.Danger.Int32,
-		DangerStars: stars(l.Danger.Int32),
+		Danger:      l.Danger.Int64,
+		DangerStars: stars(l.Danger.Int64),
 		Description: l.Description.String,
 		Secrets:     l.Secrets.String,
 	}
@@ -100,7 +101,7 @@ func handleAPILocations(w http.ResponseWriter, r *http.Request) {
 
 type npcDTO struct {
 	Name         string `json:"name"`
-	Madness      int32  `json:"madness"`
+	Madness      int64  `json:"madness"`
 	MadnessStars string `json:"madnessStars"`
 	Disposition  string `json:"disposition"`
 	Location     string `json:"location"`
@@ -111,8 +112,8 @@ type npcDTO struct {
 func npcToDTO(n db.ListNPCsRow) npcDTO {
 	return npcDTO{
 		Name:         n.Name.String,
-		Madness:      n.Madness.Int32,
-		MadnessStars: stars(n.Madness.Int32),
+		Madness:      n.Madness.Int64,
+		MadnessStars: stars(n.Madness.Int64),
 		Disposition:  n.Disposition.String,
 		Location:     n.Location.String,
 		Description:  n.Description.String,
@@ -128,9 +129,9 @@ type monsterDTO struct {
 	Name      string `json:"name"`
 	Type      string `json:"type"`
 	Cr        string `json:"cr"`
-	Hp        int32  `json:"hp"`
+	Hp        int64  `json:"hp"`
 	HpFormula string `json:"hpFormula"`
-	Ac        int32  `json:"ac"`
+	Ac        int64  `json:"ac"`
 	AcDesc    string `json:"acDesc"`
 	Speed     string `json:"speed"`
 }
@@ -140,9 +141,9 @@ func monsterToDTO(m db.ListMonstersRow) monsterDTO {
 		Name:      m.Name,
 		Type:      m.Type.String,
 		Cr:        m.Cr.String,
-		Hp:        m.Hp.Int32,
+		Hp:        m.Hp.Int64,
 		HpFormula: m.HpFormula.String,
-		Ac:        m.Ac.Int32,
+		Ac:        m.Ac.Int64,
 		AcDesc:    m.AcDesc.String,
 		Speed:     m.Speed.String,
 	}
@@ -179,9 +180,9 @@ type encounterMonsterDTO struct {
 type encounterDTO struct {
 	ID              int64                 `json:"id"`
 	Name            string                `json:"name"`
-	Chapter         int32                 `json:"chapter"`
+	Chapter         int64                 `json:"chapter"`
 	Location        string                `json:"location"`
-	Difficulty      int32                 `json:"difficulty"`
+	Difficulty      int64                 `json:"difficulty"`
 	DifficultyStars string                `json:"difficultyStars"`
 	Levelup         bool                  `json:"levelup"`
 	Notes           string                `json:"notes"`
@@ -203,10 +204,10 @@ func handleAPIEncounters(w http.ResponseWriter, r *http.Request) {
 		out[i] = encounterDTO{
 			ID:              e.ID,
 			Name:            e.Name.String,
-			Chapter:         e.Chapter.Int32,
+			Chapter:         e.Chapter.Int64,
 			Location:        e.Location,
-			Difficulty:      e.Difficulty.Int32,
-			DifficultyStars: stars(e.Difficulty.Int32),
+			Difficulty:      e.Difficulty.Int64,
+			DifficultyStars: stars(e.Difficulty.Int64),
 			Levelup:         e.Levelup.Bool,
 			Notes:           e.Notes.String,
 			Monsters:        []encounterMonsterDTO{},
@@ -217,7 +218,7 @@ func handleAPIEncounters(w http.ResponseWriter, r *http.Request) {
 	mRows, err := q.ListEncounterMonsters(ctx)
 	if err == nil {
 		for _, m := range mRows {
-			if idx, ok := idIndex[m.EncounterID]; ok {
+			if idx, ok := idIndex[m.EncounterID.Int64]; ok {
 				out[idx].Monsters = append(out[idx].Monsters, encounterMonsterDTO{
 					Name:     m.Name,
 					Cr:       m.Cr.String,
@@ -267,12 +268,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := conn.Query(r.Context(), `
-		SELECT chapter_title, content,
-		       1 - (embedding <=> $1::vector) AS score
-		FROM chapter_chunks
-		ORDER BY embedding <=> $1::vector
-		LIMIT 5`, emb)
+	rows, err := conn.QueryContext(r.Context(), `SELECT chapter_title, content, embedding FROM chapter_chunks`)
 	if err != nil {
 		http.Error(w, "Search error: "+err.Error(), 500)
 		return
@@ -281,12 +277,20 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 
 	var results []searchResult
 	for rows.Next() {
-		var sr searchResult
-		if err := rows.Scan(&sr.ChapterTitle, &sr.Content, &sr.Score); err != nil {
+		var chapterTitle, content, embeddingJSON string
+		if err := rows.Scan(&chapterTitle, &content, &embeddingJSON); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		results = append(results, sr)
+		score, err := cosineSimilarity(emb, embeddingJSON)
+		if err != nil {
+			continue
+		}
+		results = append(results, searchResult{ChapterTitle: chapterTitle, Content: content, Score: score})
+	}
+	sort.Slice(results, func(i, j int) bool { return results[i].Score > results[j].Score })
+	if len(results) > 5 {
+		results = results[:5]
 	}
 	if results == nil {
 		results = []searchResult{}

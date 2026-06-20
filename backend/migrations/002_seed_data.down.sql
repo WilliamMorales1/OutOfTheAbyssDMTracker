@@ -1,0 +1,9 @@
+DELETE FROM MapMarkers;
+DELETE FROM GameMaps;
+DELETE FROM EncounterMonsters;
+DELETE FROM Monsters;
+DELETE FROM Sessions;
+DELETE FROM Events;
+DELETE FROM Encounters;
+DELETE FROM NPCS;
+DELETE FROM Locations;

@@ -1,4 +1,4 @@
-.PHONY: build build-frontend build-backend run dev watch-frontend watch-backend clean
+.PHONY: build build-frontend build-backend run dev watch-frontend watch-backend clean reseed
 
 build: build-frontend build-backend
 
@@ -24,3 +24,6 @@ clean:
 	rm -f backend/oota
 	rm -rf backend/tmp
 	rm -rf frontend/dist
+
+reseed:
+	cd backend && go run ./cmd/migrate

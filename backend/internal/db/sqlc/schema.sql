@@ -1,5 +1,5 @@
 CREATE TABLE Locations (
-    id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT UNIQUE,
     type        TEXT,
     status      TEXT,
@@ -9,7 +9,7 @@ CREATE TABLE Locations (
 );
 
 CREATE TABLE NPCS (
-    id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     description TEXT,
     madness     INT,
     name        TEXT,
@@ -19,7 +19,7 @@ CREATE TABLE NPCS (
 );
 
 CREATE TABLE Encounters (
-    id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT,
     location    TEXT REFERENCES Locations(name),
     difficulty  INT,
@@ -31,14 +31,14 @@ CREATE TABLE Encounters (
 );
 
 CREATE TABLE Events (
-    id          BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
     title       TEXT,
     category    TEXT,
     description TEXT
 );
 
 CREATE TABLE Monsters (
-    id                   BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     name                 TEXT UNIQUE NOT NULL,
     type                 TEXT,
     cr                   TEXT,
@@ -67,14 +67,14 @@ CREATE TABLE Monsters (
 );
 
 CREATE TABLE EncounterMonsters (
-    encounter_id BIGINT REFERENCES Encounters(id) ON DELETE CASCADE,
-    monster_id   BIGINT REFERENCES Monsters(id)   ON DELETE CASCADE,
+    encounter_id INTEGER REFERENCES Encounters(id) ON DELETE CASCADE,
+    monster_id   INTEGER REFERENCES Monsters(id)   ON DELETE CASCADE,
     quantity     TEXT NOT NULL DEFAULT '1',
     PRIMARY KEY (encounter_id, monster_id)
 );
 
 CREATE TABLE Sessions (
-    id             BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
     session_num    INTEGER UNIQUE NOT NULL,
     title          TEXT NOT NULL,
     chapters       TEXT,

@@ -14,7 +14,7 @@ FROM EncounterMonsters em
 JOIN Monsters m ON m.id = em.monster_id
 ORDER BY em.encounter_id,
   CASE m.cr WHEN '1/8' THEN 0.125 WHEN '1/4' THEN 0.25 WHEN '1/2' THEN 0.5
-            ELSE m.cr::numeric END NULLS LAST,
+            ELSE CAST(m.cr AS REAL) END,
   m.name;
 
 -- name: ListEvents :many
@@ -36,7 +36,7 @@ SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
 FROM Monsters
 ORDER BY
   CASE cr WHEN '1/8' THEN 0.125 WHEN '1/4' THEN 0.25 WHEN '1/2' THEN 0.5
-    ELSE cr::numeric END NULLS LAST,
+    ELSE CAST(cr AS REAL) END,
   name;
 
 -- name: ListSessions :many

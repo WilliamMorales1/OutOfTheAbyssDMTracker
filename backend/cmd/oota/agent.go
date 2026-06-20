@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -264,16 +265,15 @@ func execSQL(ctx context.Context, query string) string {
 	if !strings.HasPrefix(q, "SELECT") {
 		return "Error: only SELECT queries allowed."
 	}
-	rows, err := conn.Query(ctx, query)
+	rows, err := conn.QueryContext(ctx, query)
 	if err != nil {
 		return "Query error: " + err.Error()
 	}
 	defer rows.Close()
 
-	cols := rows.FieldDescriptions()
-	var colNames []string
-	for _, c := range cols {
-		colNames = append(colNames, string(c.Name))
+	colNames, err := rows.Columns()
+	if err != nil {
+		return "Query error: " + err.Error()
 	}
 
 	var sb strings.Builder
@@ -284,7 +284,14 @@ func execSQL(ctx context.Context, query string) string {
 
 	count := 0
 	for rows.Next() && count < 50 {
-		vals, _ := rows.Values()
+		vals := make([]any, len(colNames))
+		ptrs := make([]any, len(colNames))
+		for i := range vals {
+			ptrs[i] = &vals[i]
+		}
+		if err := rows.Scan(ptrs...); err != nil {
+			return "Query error: " + err.Error()
+		}
 		var strs []string
 		for _, v := range vals {
 			strs = append(strs, fmt.Sprintf("%v", v))
@@ -300,6 +307,38 @@ func execSQL(ctx context.Context, query string) string {
 		sb.WriteString("(truncated at 50 rows)\n")
 	}
 	return sb.String()
+}
+
+func cosineSimilarity(aJSON, bJSON string) (float64, error) {
+	a, err := parseEmbedding(aJSON)
+	if err != nil {
+		return 0, err
+	}
+	b, err := parseEmbedding(bJSON)
+	if err != nil {
+		return 0, err
+	}
+	if len(a) != len(b) || len(a) == 0 {
+		return 0, fmt.Errorf("embedding length mismatch")
+	}
+	var dot, normA, normB float64
+	for i := range a {
+		dot += a[i] * b[i]
+		normA += a[i] * a[i]
+		normB += b[i] * b[i]
+	}
+	if normA == 0 || normB == 0 {
+		return 0, nil
+	}
+	return dot / (math.Sqrt(normA) * math.Sqrt(normB)), nil
+}
+
+func parseEmbedding(s string) ([]float64, error) {
+	var v []float64
+	if err := json.Unmarshal([]byte(s), &v); err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 const searchEmbedModel = "nomic-embed-text-v2-moe"

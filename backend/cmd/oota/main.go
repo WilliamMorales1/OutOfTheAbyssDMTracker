@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -11,12 +12,12 @@ import (
 	"oota/internal/db"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v4"
+	_ "modernc.org/sqlite"
 )
 
-var conn *pgx.Conn
+var conn *sql.DB
 var q *db.Queries
 var gameMaps []GameMap
 
@@ -46,7 +47,7 @@ func vbDims(vb string) (w, h string) {
 }
 
 func loadGameMaps(ctx context.Context) error {
-	rows, err := conn.Query(ctx, `SELECT id, img, vb FROM GameMaps ORDER BY id`)
+	rows, err := conn.QueryContext(ctx, `SELECT id, img, vb FROM GameMaps ORDER BY id`)
 	if err != nil {
 		return err
 	}
@@ -60,7 +61,7 @@ func loadGameMaps(ctx context.Context) error {
 		maps = append(maps, gm)
 	}
 	for i, gm := range maps {
-		mrows, err := conn.Query(ctx, `SELECT i, x, y, title, body FROM MapMarkers WHERE map_id=$1 ORDER BY i`, gm.ID)
+		mrows, err := conn.QueryContext(ctx, `SELECT i, x, y, title, body FROM MapMarkers WHERE map_id=? ORDER BY i`, gm.ID)
 		if err != nil {
 			return err
 		}
@@ -88,7 +89,8 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
-const dbURL = "postgres://wsm52:H&pg@localhost/oota?sslmode=disable"
+const dbPath = "oota.db"
+const dbURL = "sqlite://" + dbPath + "?_pragma=foreign_keys(1)"
 
 func runMigrations() {
 	m, err := migrate.New("file://migrations", dbURL)
@@ -116,11 +118,11 @@ func main() {
 
 	ctx := context.Background()
 	var err error
-	conn, err = pgx.Connect(ctx, dbURL)
+	conn, err = sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close(ctx)
+	defer conn.Close()
 	q = db.New(conn)
 	if err := loadGameMaps(ctx); err != nil {
 		log.Fatalf("load maps: %v", err)
