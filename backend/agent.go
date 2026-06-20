@@ -302,24 +302,6 @@ func execSQL(ctx context.Context, query string) string {
 	return sb.String()
 }
 
-func handleChat(w http.ResponseWriter, r *http.Request) {
-	q := r.FormValue("q")
-	if q == "" {
-		http.Error(w, "missing q", 400)
-		return
-	}
-	answer, err := runAgent(r.Context(), q)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	answer = strings.ReplaceAll(answer, "\n\n", "</p><p>")
-	answer = strings.ReplaceAll(answer, "\n", "<br>")
-	answer = "<p>" + answer + "</p>"
-	w.Header().Set("Content-Type", "text/html")
-	ChatMessage(q, answer).Render(r.Context(), w)
-}
-
 const searchEmbedModel = "nomic-embed-text-v2-moe"
 
 func queryEmbedding(ctx context.Context, text string) (string, error) {
@@ -353,47 +335,8 @@ func queryEmbedding(ctx context.Context, text string) (string, error) {
 }
 
 type searchResult struct {
-	ChapterTitle string
-	Content      string
-	Score        float64
+	ChapterTitle string  `json:"chapterTitle"`
+	Content      string  `json:"content"`
+	Score        float64 `json:"score"`
 }
 
-func handleSearch(w http.ResponseWriter, r *http.Request) {
-	q := r.FormValue("q")
-	if q == "" {
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprint(w, `<p class="text-secondary">Enter a query above.</p>`)
-		return
-	}
-
-	emb, err := queryEmbedding(r.Context(), q)
-	if err != nil {
-		http.Error(w, "Embedding error: "+err.Error(), 500)
-		return
-	}
-
-	rows, err := conn.Query(r.Context(), `
-		SELECT chapter_title, content,
-		       1 - (embedding <=> $1::vector) AS score
-		FROM chapter_chunks
-		ORDER BY embedding <=> $1::vector
-		LIMIT 5`, emb)
-	if err != nil {
-		http.Error(w, "Search error: "+err.Error(), 500)
-		return
-	}
-	defer rows.Close()
-
-	var results []searchResult
-	for rows.Next() {
-		var sr searchResult
-		if err := rows.Scan(&sr.ChapterTitle, &sr.Content, &sr.Score); err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		results = append(results, sr)
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	SearchResults(results).Render(r.Context(), w)
-}

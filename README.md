@@ -27,7 +27,7 @@ createdb oota
 
 **2. Configure the connection**
 
-The connection string is hardcoded in `main.go`:
+The connection string is hardcoded in `backend/main.go`:
 
 ```go
 const dbURL = "postgres://USER:PASSWORD@localhost/oota?sslmode=disable"
@@ -35,18 +35,29 @@ const dbURL = "postgres://USER:PASSWORD@localhost/oota?sslmode=disable"
 
 Update it to match your PostgreSQL credentials before building.
 
-**3. Build and run**
+**3. Build the frontend**
 
 ```bash
+cd frontend
+npm install
+npm run build
+```
+
+**4. Build and run the backend**
+
+```bash
+cd backend
 go build -o oota .
 ./oota
 ```
 
-Migrations run automatically on startup. The app listens on `http://localhost:8080`.
+Migrations run automatically on startup. The app listens on `http://localhost:8080` and serves the built frontend from `frontend/dist`. The binary expects to run from `backend/` (it reads `migrations/`, `images/`, and `../frontend/dist` relative to that directory).
+
+For frontend development, run `npm run watch` in `frontend/` (recompiles on save) alongside `go run .` in `backend/`, then refresh the browser at `http://localhost:8080`.
 
 ## Database migrations
 
-Migrations live in `migrations/` and are managed by [golang-migrate](https://github.com/golang-migrate/migrate).
+Migrations live in `backend/migrations/` and are managed by [golang-migrate](https://github.com/golang-migrate/migrate).
 
 | Migration | Contents                                  |
 | --------- | ----------------------------------------- |
@@ -61,22 +72,22 @@ Migrations live in `migrations/` and are managed by [golang-migrate](https://git
 To run migrations manually:
 
 ```bash
-migrate -path migrations -database "postgres://user:pass@localhost/oota?sslmode=disable" up
+migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?sslmode=disable" up
 ```
 
 To roll back:
 
 ```bash
-migrate -path migrations -database "postgres://user:pass@localhost/oota?sslmode=disable" down
+migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?sslmode=disable" down
 ```
 
 ## Tech stack
 
 | Layer            | Tool                                                     |
 | ---------------- | -------------------------------------------------------- |
-| Language         | Go                                                       |
-| HTTP             | `net/http`                                             |
-| Templates        | [templ](https://templ.guide)                                |
+| Backend language | Go                                                       |
+| HTTP             | `net/http` (JSON API)                                  |
+| Frontend         | TypeScript, compiled via `tsc`, no bundler/framework     |
 | Database driver  | `pgx/v4`                                               |
 | SQL codegen      | [sqlc](https://sqlc.dev)                                    |
 | Migrations       | [golang-migrate](https://github.com/golang-migrate/migrate) |
@@ -86,12 +97,14 @@ migrate -path migrations -database "postgres://user:pass@localhost/oota?sslmode=
 
 ```
 .
-├── main.go              # HTTP server, routes, migration runner
-├── agent.go             # LLM chat handler, tool loop, vector embedding search
-├── templates.templ      # UI templates (templ source)
-├── templates_templ.go   # Generated template code
-├── db/                  # sqlc-generated DB layer
-├── db-seeding/		 # SQL schema and queries + sqlc config
-├── migrations/          # golang-migrate SQL migration files
-└── oota.html            # Single-page shell
+├── backend/
+│   ├── main.go           # HTTP server, routes, migration runner
+│   ├── agent.go          # LLM chat handler, tool loop, vector embedding search
+│   ├── api.go            # JSON API handlers
+│   ├── db/               # sqlc-generated DB layer
+│   ├── db-seeding/       # SQL schema and queries + sqlc config
+│   ├── migrations/       # golang-migrate SQL migration files
+│   ├── images/           # static map images, served at /images
+│   └── go.mod / go.sum
+└── frontend/             # TypeScript app (tsc only), built to frontend/dist
 ```

@@ -1,4 +1,6 @@
-db/
-templates_templ.go
+backend/db/
 sessionNotes/
-images/
+backend/images/
+frontend/node_modules/
+frontend/dist/
+oota.exe

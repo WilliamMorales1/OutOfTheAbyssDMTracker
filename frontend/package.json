@@ -1,0 +1,13 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').cpSync('index.html','dist/index.html');require('fs').cpSync('src/index.css','dist/index.css')\"",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2"
+  }
+}

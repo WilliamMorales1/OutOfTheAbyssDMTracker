@@ -1,0 +1,35 @@
+.dt {
+  font-family: 'Trajan Pro', serif;
+  font-size: 1.25rem;
+  color: #f0d080;
+  margin-bottom: 10px;
+}
+
+.db {
+  line-height: 1.5;
+  color: #d6d6d6;
+}
+
+.chat-bubble {
+  display: inline-block;
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.chat-msg.user .chat-bubble {
+  background: #2a2a3a;
+}
+
+.chat-msg.agent .chat-bubble {
+  background: #1a1a24;
+  border: 1px solid #352c10;
+}
+
+mark {
+  background-color: #ffc107;
+  color: #000;
+  padding: 0 2px;
+  border-radius: 2px;
+}
