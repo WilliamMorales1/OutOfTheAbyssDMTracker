@@ -14,4 +14,10 @@ export const api = {
   maps: () => getJSON('/api/maps'),
   search: (q: string) => getJSON(`/api/search?q=${encodeURIComponent(q)}`),
   chat: (q: string) => getJSON(`/api/chat?q=${encodeURIComponent(q)}`),
+  notes: () => getJSON<string[]>('/api/notes'),
+  note: (name: string) => getJSON<{ name: string; content: string }>(`/api/notes/${encodeURIComponent(name)}`),
+  saveNote: async (name: string, content: string) => {
+    const res = await fetch(`/api/notes/${encodeURIComponent(name)}`, { method: 'PUT', body: content })
+    if (!res.ok) throw new Error(await res.text())
+  },
 }

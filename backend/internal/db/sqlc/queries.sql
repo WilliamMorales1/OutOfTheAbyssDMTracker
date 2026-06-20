@@ -40,5 +40,5 @@ ORDER BY
   name;
 
 -- name: ListSessions :many
-SELECT id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, dm_notes, checkpoint
+SELECT id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, checkpoint
 FROM Sessions ORDER BY session_num;

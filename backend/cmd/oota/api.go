@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 
-	"oota/db"
+	"oota/internal/db"
 )
 
 func writeJSON(w http.ResponseWriter, v any) {
@@ -50,7 +54,6 @@ type sessionDTO struct {
 	KeyEncounters string `json:"keyEncounters"`
 	KeyNpcs       string `json:"keyNpcs"`
 	Checkpoint    string `json:"checkpoint"`
-	DmNotes       string `json:"dmNotes"`
 }
 
 func sessionToDTO(s db.Session) sessionDTO {
@@ -64,7 +67,6 @@ func sessionToDTO(s db.Session) sessionDTO {
 		KeyEncounters: s.KeyEncounters.String,
 		KeyNpcs:       s.KeyNpcs.String,
 		Checkpoint:    s.Checkpoint.String,
-		DmNotes:       s.DmNotes.String,
 	}
 }
 
@@ -291,4 +293,67 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, results)
+}
+
+const notesDir = "notes"
+
+var validNoteName = regexp.MustCompile(`^[A-Za-z0-9_-]+\.md$`)
+
+func notePath(name string) (string, bool) {
+	if !validNoteName.MatchString(name) {
+		return "", false
+	}
+	return filepath.Join(notesDir, name), true
+}
+
+func handleAPINotesList(w http.ResponseWriter, _ *http.Request) {
+	entries, err := os.ReadDir(notesDir)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	names := []string{}
+	for _, e := range entries {
+		if !e.IsDir() && validNoteName.MatchString(e.Name()) {
+			names = append(names, e.Name())
+		}
+	}
+	writeJSON(w, names)
+}
+
+func handleAPINote(w http.ResponseWriter, r *http.Request) {
+	name := strings.TrimPrefix(r.URL.Path, "/api/notes/")
+	path, ok := notePath(name)
+	if !ok {
+		http.Error(w, "invalid note name", 400)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		content, err := os.ReadFile(path)
+		if err != nil {
+			http.Error(w, err.Error(), 404)
+			return
+		}
+		writeJSON(w, struct {
+			Name    string `json:"name"`
+			Content string `json:"content"`
+		}{name, string(content)})
+
+	case http.MethodPut:
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		if err := os.WriteFile(path, body, 0644); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		w.WriteHeader(204)
+
+	default:
+		http.Error(w, "method not allowed", 405)
+	}
 }

@@ -67,12 +67,39 @@ export function dataTable<T>(columns: Column<T>[], rows: T[], emptyMessage: stri
     })
   }
 
+  function highlight(el: HTMLElement, term: string) {
+    if (!term) return
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    const textNodes: Text[] = []
+    let node: Node | null
+    while ((node = walker.nextNode())) textNodes.push(node as Text)
+    const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig')
+    for (const tn of textNodes) {
+      const text = tn.textContent ?? ''
+      if (!re.test(text)) continue
+      re.lastIndex = 0
+      const frag = document.createDocumentFragment()
+      let lastIndex = 0
+      let m: RegExpExecArray | null
+      while ((m = re.exec(text))) {
+        frag.append(text.slice(lastIndex, m.index))
+        frag.append(h('mark', {}, [m[0]]))
+        lastIndex = m.index + m[0].length
+      }
+      frag.append(text.slice(lastIndex))
+      tn.replaceWith(frag)
+    }
+  }
+
   function renderBody() {
     tbody.innerHTML = ''
+    const f = filter.trim()
     for (const row of getRows()) {
       const tr = h('tr', {}, [])
       for (const c of columns) {
-        tr.append(h('td', {}, [c.render(row)]))
+        const td = h('td', {}, [c.render(row)]) as HTMLElement
+        if (f) highlight(td, f)
+        tr.append(td)
       }
       tbody.append(tr)
     }

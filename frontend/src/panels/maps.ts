@@ -26,9 +26,31 @@ export async function mapsPanel(): Promise<Node> {
     ['Toggle Coordinate Tooltip']
   )
 
-  container.append(h('div', { style: 'margin-bottom:10px;' }, [toggleBtn]), coordDisplay)
+  const select = h(
+    'select',
+    { className: 'form-select form-select-sm bg-dark text-light border-secondary', style: 'max-width:300px;width:auto;' },
+    [
+      h('option', { value: '' }, ['Select a map...']),
+      ...maps.map((gm) => h('option', { value: gm.id }, [gm.id])),
+    ]
+  ) as HTMLSelectElement
+
+  container.append(
+    h('div', { className: 'd-flex gap-3 align-items-center mb-3' }, [select, toggleBtn]),
+    coordDisplay
+  )
 
   const svgEls: SVGSVGElement[] = []
+  const mapDivs: HTMLElement[] = []
+
+  function showMap(id: string) {
+    mapDivs.forEach((div) => {
+      div.style.display = div.dataset.mapId === id ? '' : 'none'
+    })
+    if (id) requestAnimationFrame(updateScales)
+  }
+
+  select.addEventListener('change', () => showMap(select.value))
 
   for (const gm of maps) {
     const card = h('div', {
@@ -79,10 +101,15 @@ export async function mapsPanel(): Promise<Node> {
 
     svgEls.push(svgEl)
 
-    const mapDiv = h('div', { className: 'sm', style: 'position:relative;background:#080910;width:100%;margin-bottom:16px;' }, [
+    const mapDiv = h('div', {
+      className: 'sm',
+      style: 'position:relative;background:#080910;width:100%;margin-bottom:16px;display:none;',
+    }, [
       svgEl as unknown as Node,
       card,
-    ])
+    ]) as HTMLElement
+    mapDiv.dataset.mapId = gm.id
+    mapDivs.push(mapDiv)
 
     mapDiv.addEventListener('mousemove', (e) => {
       const me = e as MouseEvent
@@ -151,7 +178,11 @@ export async function mapsPanel(): Promise<Node> {
   }
 
   window.addEventListener('resize', updateScales)
-  requestAnimationFrame(updateScales)
+
+  if (maps.length) {
+    select.value = maps[0].id
+    showMap(maps[0].id)
+  }
 
   return container
 }

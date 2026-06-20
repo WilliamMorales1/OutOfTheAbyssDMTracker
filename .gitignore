@@ -1,6 +1,7 @@
-backend/db/
+backend/internal/db/*.go
 sessionNotes/
 backend/images/
 frontend/node_modules/
 frontend/dist/
 oota.exe
+backend/tmp/

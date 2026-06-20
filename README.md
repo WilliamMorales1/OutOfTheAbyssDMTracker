@@ -35,25 +35,27 @@ const dbURL = "postgres://USER:PASSWORD@localhost/oota?sslmode=disable"
 
 Update it to match your PostgreSQL credentials before building.
 
-**3. Build the frontend**
+**3. Build and run**
+
+From the repo root, via the `Makefile`:
 
 ```bash
-cd frontend
-npm install
-npm run build
-```
-
-**4. Build and run the backend**
-
-```bash
-cd backend
-go build -o oota .
-./oota
+make build   # builds frontend (tsc) and backend (go build -o backend/oota)
+make run     # build, then run backend/oota
 ```
 
 Migrations run automatically on startup. The app listens on `http://localhost:8080` and serves the built frontend from `frontend/dist`. The binary expects to run from `backend/` (it reads `migrations/`, `images/`, and `../frontend/dist` relative to that directory).
 
-For frontend development, run `npm run watch` in `frontend/` (recompiles on save) alongside `go run .` in `backend/`, then refresh the browser at `http://localhost:8080`.
+**Live reload for development:**
+
+```bash
+make watch-frontend   # tsc --watch, recompiles frontend on save
+make watch-backend    # air, rebuilds + restarts backend on save (requires air: go install github.com/air-verse/air@latest)
+```
+
+Run both in separate terminals, then refresh the browser at `http://localhost:8080`.
+
+Other targets: `make build-frontend`, `make build-backend`, `make dev` (frontend build + `go run`, no binary), `make clean`.
 
 ## Database migrations
 
@@ -68,6 +70,9 @@ Migrations live in `backend/migrations/` and are managed by [golang-migrate](htt
 | `005`   | Seed events (11 campaign events)          |
 | `006`   | Seed sessions (16 session guides)         |
 | `007`   | Seed monsters (full D&D 5e monster stats) |
+| `008`   | Add checkpoint column to sessions         |
+| `009`   | Seed maps                                 |
+| `010`   | Drop DM notes column from sessions        |
 
 To run migrations manually:
 
@@ -98,13 +103,17 @@ migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?
 ```
 .
 ├── backend/
-│   ├── main.go           # HTTP server, routes, migration runner
-│   ├── agent.go          # LLM chat handler, tool loop, vector embedding search
-│   ├── api.go            # JSON API handlers
-│   ├── db/               # sqlc-generated DB layer
-│   ├── db-seeding/       # SQL schema and queries + sqlc config
+│   ├── cmd/oota/
+│   │   ├── main.go       # HTTP server, routes, migration runner
+│   │   ├── agent.go      # LLM chat handler, tool loop, vector embedding search
+│   │   └── api.go        # JSON API handlers
+│   ├── internal/db/      # sqlc-generated DB layer
+│   │   └── sqlc/         # SQL schema and queries + sqlc config
 │   ├── migrations/       # golang-migrate SQL migration files
 │   ├── images/           # static map images, served at /images
+│   ├── notes/            # session notes markdown, served via notes API
+│   ├── .air.toml         # live-reload config for `make watch-backend`
 │   └── go.mod / go.sum
-└── frontend/             # TypeScript app (tsc only), built to frontend/dist
+├── frontend/             # TypeScript app (tsc only), built to frontend/dist
+└── Makefile              # build/run/watch targets for both frontend and backend
 ```

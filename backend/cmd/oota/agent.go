@@ -25,7 +25,7 @@ Database schema:
   Events(id, title, category, description)
   Monsters(id, name, type, cr, hp, hp_formula, ac, ac_desc, speed, str, dex, con, int_score, wis, cha, saving_throws, damage_resistances, damage_immunities, condition_immunities, senses, languages, traits, actions, legendary_actions, notes)
   EncounterMonsters(encounter_id, monster_id, quantity)
-  Sessions(id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, dm_notes, checkpoint)
+  Sessions(id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, checkpoint)
 
 Strict rules:
     No articles (the, a, an).

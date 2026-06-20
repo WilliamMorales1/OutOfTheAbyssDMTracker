@@ -8,7 +8,6 @@ export interface Session {
   keyEncounters: string
   keyNpcs: string
   checkpoint: string
-  dmNotes: string
 }
 
 export interface Location {

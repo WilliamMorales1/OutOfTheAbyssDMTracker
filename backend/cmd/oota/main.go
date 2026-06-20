@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"oota/db"
+	"oota/internal/db"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -137,6 +137,8 @@ func main() {
 	mux.HandleFunc("/api/maps", handleAPIMaps)
 	mux.HandleFunc("/api/chat", handleAPIChat)
 	mux.HandleFunc("/api/search", handleAPISearch)
+	mux.HandleFunc("/api/notes", handleAPINotesList)
+	mux.HandleFunc("/api/notes/", handleAPINote)
 	mux.HandleFunc("/", serveFrontend)
 
 	log.Println("Listening on http://localhost:8080")

@@ -22,7 +22,6 @@ export async function sessionsPanel(): Promise<Node> {
     { header: 'Key Encounters', render: (s) => s.keyEncounters, sortValue: (s) => s.keyEncounters },
     { header: 'Key NPCs', render: (s) => s.keyNpcs, sortValue: (s) => s.keyNpcs },
     { header: 'Checkpoint', render: (s) => s.checkpoint, sortValue: (s) => s.checkpoint },
-    { header: 'DM Notes', render: (s) => s.dmNotes, sortValue: (s) => s.dmNotes },
   ]
 
   return dataTable(columns, data, 'No sessions found. Run: go run ./database/seed_sessions.go')

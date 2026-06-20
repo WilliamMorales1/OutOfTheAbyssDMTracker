@@ -8,9 +8,11 @@ import { eventsPanel } from './panels/events.js'
 import { mapsPanel } from './panels/maps.js'
 import { chatPanel } from './panels/chat.js'
 import { searchPanel } from './panels/search.js'
+import { notesPanel } from './panels/notes.js'
 
 const tabs = [
   { name: 'Sessions', path: 'sessions', load: sessionsPanel },
+  { name: 'Session Notes', path: 'notes', load: notesPanel },
   { name: 'Locations', path: 'locations', load: locationsPanel },
   { name: 'NPCs', path: 'npcs', load: npcsPanel },
   { name: 'Encounters', path: 'encounters', load: encountersPanel },
