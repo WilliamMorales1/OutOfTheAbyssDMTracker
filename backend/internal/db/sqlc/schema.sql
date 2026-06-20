@@ -85,3 +85,8 @@ CREATE TABLE Sessions (
     key_npcs       TEXT,
     checkpoint     TEXT
 );
+
+CREATE TABLE Notes (
+    name    TEXT PRIMARY KEY,
+    content TEXT NOT NULL DEFAULT ''
+);

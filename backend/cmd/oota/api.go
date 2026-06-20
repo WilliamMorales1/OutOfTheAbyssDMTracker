@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -299,43 +299,61 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, results)
 }
 
-const notesDir = "notes"
-
 var validNoteName = regexp.MustCompile(`^[A-Za-z0-9_-]+\.md$`)
 
-func notePath(name string) (string, bool) {
-	if !validNoteName.MatchString(name) {
-		return "", false
-	}
-	return filepath.Join(notesDir, name), true
+const notesSeedFile = "migrations/002_seed_data.up.sql"
+const notesSeedMarker = "-- Notes\n"
+
+func sqlQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
 }
 
-func handleAPINotesList(w http.ResponseWriter, _ *http.Request) {
-	entries, err := os.ReadDir(notesDir)
+// regenerateNotesSeed rewrites the Notes block in the seed migration so a
+// reseed restores the latest saved note content.
+func regenerateNotesSeed(ctx context.Context) error {
+	notes, err := q.ListNotes(ctx)
+	if err != nil {
+		return err
+	}
+
+	existing, err := os.ReadFile(notesSeedFile)
+	if err != nil {
+		return err
+	}
+	idx := strings.Index(string(existing), notesSeedMarker)
+	if idx == -1 {
+		return fmt.Errorf("%s: missing %q marker", notesSeedFile, notesSeedMarker)
+	}
+
+	var b strings.Builder
+	b.Write(existing[:idx])
+	b.WriteString(notesSeedMarker)
+	for _, n := range notes {
+		fmt.Fprintf(&b, "INSERT INTO Notes (name, content) VALUES (%s, %s);\n", sqlQuote(n.Name), sqlQuote(n.Content))
+	}
+
+	return os.WriteFile(notesSeedFile, []byte(b.String()), 0644)
+}
+
+func handleAPINotesList(w http.ResponseWriter, r *http.Request) {
+	names, err := q.ListNoteNames(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
-	}
-	names := []string{}
-	for _, e := range entries {
-		if !e.IsDir() && validNoteName.MatchString(e.Name()) {
-			names = append(names, e.Name())
-		}
 	}
 	writeJSON(w, names)
 }
 
 func handleAPINote(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimPrefix(r.URL.Path, "/api/notes/")
-	path, ok := notePath(name)
-	if !ok {
+	if !validNoteName.MatchString(name) {
 		http.Error(w, "invalid note name", 400)
 		return
 	}
 
 	switch r.Method {
 	case http.MethodGet:
-		content, err := os.ReadFile(path)
+		note, err := q.GetNote(r.Context(), name)
 		if err != nil {
 			http.Error(w, err.Error(), 404)
 			return
@@ -343,7 +361,7 @@ func handleAPINote(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, struct {
 			Name    string `json:"name"`
 			Content string `json:"content"`
-		}{name, string(content)})
+		}{note.Name, note.Content})
 
 	case http.MethodPut:
 		body, err := io.ReadAll(r.Body)
@@ -351,7 +369,11 @@ func handleAPINote(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 400)
 			return
 		}
-		if err := os.WriteFile(path, body, 0644); err != nil {
+		if err := q.UpsertNote(r.Context(), db.UpsertNoteParams{Name: name, Content: string(body)}); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		if err := regenerateNotesSeed(r.Context()); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}

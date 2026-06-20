@@ -42,3 +42,16 @@ ORDER BY
 -- name: ListSessions :many
 SELECT id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, checkpoint
 FROM Sessions ORDER BY session_num;
+
+-- name: ListNoteNames :many
+SELECT name FROM Notes ORDER BY name;
+
+-- name: ListNotes :many
+SELECT name, content FROM Notes ORDER BY name;
+
+-- name: GetNote :one
+SELECT name, content FROM Notes WHERE name = ?;
+
+-- name: UpsertNote :exec
+INSERT INTO Notes (name, content) VALUES (?, ?)
+ON CONFLICT(name) DO UPDATE SET content = excluded.content;

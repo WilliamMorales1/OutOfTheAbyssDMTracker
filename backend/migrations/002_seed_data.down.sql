@@ -1,3 +1,4 @@
+DELETE FROM Notes;
 DELETE FROM MapMarkers;
 DELETE FROM GameMaps;
 DELETE FROM EncounterMonsters;

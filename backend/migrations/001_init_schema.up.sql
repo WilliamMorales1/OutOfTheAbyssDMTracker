@@ -86,6 +86,11 @@ CREATE TABLE Sessions (
     checkpoint     TEXT
 );
 
+CREATE TABLE Notes (
+    name    TEXT PRIMARY KEY,
+    content TEXT NOT NULL DEFAULT ''
+);
+
 CREATE TABLE GameMaps (
     id  TEXT PRIMARY KEY,
     img TEXT NOT NULL,
