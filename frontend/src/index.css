@@ -27,6 +27,11 @@
   border: 1px solid #352c10;
 }
 
+.form-control.bg-dark::placeholder {
+  color: #8a8a8a;
+  opacity: 1;
+}
+
 mark {
   background-color: #ffc107;
   color: #000;

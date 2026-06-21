@@ -1,4 +1,4 @@
-.PHONY: build build-frontend build-backend run dev watch-frontend watch-backend clean reseed ingest
+.PHONY: build build-frontend build-backend run dev watch clean reseed
 
 build: build-frontend build-backend
 
@@ -14,10 +14,8 @@ run: build
 dev: build-frontend
 	cd backend && go run ./cmd/oota
 
-watch-frontend:
+watch:
 	cd frontend && npm run watch
-
-watch-backend:
 	cd backend && air
 
 clean:
@@ -27,6 +25,5 @@ clean:
 
 reseed:
 	cd backend && go run ./cmd/migrate
-
-ingest:
+	cd backend && go run ./cmd/ingest-5etools
 	cd backend && go run ./cmd/ingest-lore
