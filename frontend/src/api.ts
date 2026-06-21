@@ -1,3 +1,5 @@
+import type { MonsterDetail, MonsterRow, MonsterStat } from './types.js'
+
 async function getJSON<T>(url: string): Promise<T> {
   const res = await fetch(url)
   if (!res.ok) throw new Error(await res.text())
@@ -7,7 +9,9 @@ async function getJSON<T>(url: string): Promise<T> {
 export const api = {
   sessions: () => getJSON('/api/sessions'),
   npcs: () => getJSON('/api/npcs'),
-  monsters: () => getJSON('/api/monsters'),
+  monsters: () => getJSON<MonsterRow[]>('/api/monsters'),
+  monster: (id: number) => getJSON<MonsterDetail>(`/api/monsters/${id}`),
+  monsterStats: () => getJSON<MonsterStat[]>('/api/monster-stats'),
   maps: () => getJSON('/api/maps'),
   search: (q: string) => getJSON(`/api/search?q=${encodeURIComponent(q)}`),
   chat: (q: string) => getJSON(`/api/chat?q=${encodeURIComponent(q)}`),

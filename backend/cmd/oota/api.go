@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"oota/internal/db"
@@ -102,33 +103,159 @@ func handleAPINPCs(w http.ResponseWriter, r *http.Request) {
 }
 
 type monsterDTO struct {
-	Name      string `json:"name"`
-	Type      string `json:"type"`
-	Cr        string `json:"cr"`
-	Hp        int64  `json:"hp"`
-	HpFormula string `json:"hpFormula"`
-	Ac        int64  `json:"ac"`
-	AcDesc    string `json:"acDesc"`
-	Speed     string `json:"speed"`
-	Dex       int64  `json:"dex"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Cr       string `json:"cr"`
+	ImageUrl string `json:"imageUrl"`
 }
 
 func monsterToDTO(m db.ListMonstersRow) monsterDTO {
 	return monsterDTO{
-		Name:      m.Name,
-		Type:      m.Type.String,
-		Cr:        m.Cr.String,
-		Hp:        m.Hp.Int64,
-		HpFormula: m.HpFormula.String,
-		Ac:        m.Ac.Int64,
-		AcDesc:    m.AcDesc.String,
-		Speed:     m.Speed.String,
-		Dex:       m.Dex.Int64,
+		ID:       m.ID,
+		Name:     m.Name,
+		Type:     m.Type.String,
+		Cr:       m.Cr.String,
+		ImageUrl: m.ImageUrl,
 	}
 }
 
 func handleAPIMonsters(w http.ResponseWriter, r *http.Request) {
 	listHandler(q.ListMonsters, monsterToDTO)(w, r)
+}
+
+// monsterStatDTO is the lightweight ac/hp/dex lookup used to autofill the
+// initiative tracker, kept separate from the full bestiary list/detail DTOs.
+type monsterStatDTO struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	Ac   int64  `json:"ac"`
+	Hp   int64  `json:"hp"`
+	Dex  int64  `json:"dex"`
+}
+
+func monsterStatToDTO(m db.ListMonsterStatsRow) monsterStatDTO {
+	return monsterStatDTO{
+		ID:   m.ID,
+		Name: m.Name,
+		Ac:   m.Ac.Int64,
+		Hp:   m.Hp.Int64,
+		Dex:  m.Dex.Int64,
+	}
+}
+
+func handleAPIMonsterStats(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListMonsterStats, monsterStatToDTO)(w, r)
+}
+
+// statBlockEntry is one named trait/action/reaction/legendary-action block.
+type statBlockEntry struct {
+	Name string `json:"name"`
+	Text string `json:"text"`
+}
+
+func parseStatBlockEntries(jsonText string) []statBlockEntry {
+	if jsonText == "" {
+		return nil
+	}
+	var entries []statBlockEntry
+	if err := json.Unmarshal([]byte(jsonText), &entries); err != nil {
+		return nil
+	}
+	return entries
+}
+
+type monsterDetailDTO struct {
+	ID                  int64            `json:"id"`
+	Name                string           `json:"name"`
+	Type                string           `json:"type"`
+	Size                string           `json:"size"`
+	Alignment           string           `json:"alignment"`
+	Cr                  string           `json:"cr"`
+	Source              string           `json:"source"`
+	Hp                  int64            `json:"hp"`
+	HpFormula           string           `json:"hpFormula"`
+	Ac                  int64            `json:"ac"`
+	AcDesc              string           `json:"acDesc"`
+	Speed               string           `json:"speed"`
+	Str                 int64            `json:"str"`
+	Dex                 int64            `json:"dex"`
+	Con                 int64            `json:"con"`
+	Int                 int64            `json:"int"`
+	Wis                 int64            `json:"wis"`
+	Cha                 int64            `json:"cha"`
+	SavingThrows        string           `json:"savingThrows"`
+	Skills              string           `json:"skills"`
+	DamageResistances   string           `json:"damageResistances"`
+	DamageImmunities    string           `json:"damageImmunities"`
+	Vulnerabilities     string           `json:"vulnerabilities"`
+	ConditionImmunities string           `json:"conditionImmunities"`
+	Senses              string           `json:"senses"`
+	PassivePerception   int64            `json:"passivePerception"`
+	Languages           string           `json:"languages"`
+	Environment         string           `json:"environment"`
+	ImageUrl            string           `json:"imageUrl"`
+	Traits              []statBlockEntry `json:"traits"`
+	Actions             []statBlockEntry `json:"actions"`
+	Reactions           []statBlockEntry `json:"reactions"`
+	LegendaryActions    []statBlockEntry `json:"legendaryActions"`
+	Spellcasting        []statBlockEntry `json:"spellcasting"`
+	Notes               string           `json:"notes"`
+}
+
+func monsterDetailToDTO(m db.GetMonsterRow) monsterDetailDTO {
+	return monsterDetailDTO{
+		ID:                  m.ID,
+		Name:                m.Name,
+		Type:                m.Type.String,
+		Size:                m.Size,
+		Alignment:           m.Alignment,
+		Cr:                  m.Cr.String,
+		Source:              m.Source,
+		Hp:                  m.Hp.Int64,
+		HpFormula:           m.HpFormula.String,
+		Ac:                  m.Ac.Int64,
+		AcDesc:              m.AcDesc.String,
+		Speed:               m.Speed.String,
+		Str:                 m.Str.Int64,
+		Dex:                 m.Dex.Int64,
+		Con:                 m.Con.Int64,
+		Int:                 m.IntScore.Int64,
+		Wis:                 m.Wis.Int64,
+		Cha:                 m.Cha.Int64,
+		SavingThrows:        m.SavingThrows,
+		Skills:              m.Skills,
+		DamageResistances:   m.DamageResistances,
+		DamageImmunities:    m.DamageImmunities,
+		Vulnerabilities:     m.Vulnerabilities,
+		ConditionImmunities: m.ConditionImmunities,
+		Senses:              m.Senses,
+		PassivePerception:   m.PassivePerception.Int64,
+		Languages:           m.Languages,
+		Environment:         m.Environment,
+		ImageUrl:            m.ImageUrl,
+		Traits:              parseStatBlockEntries(m.Traits),
+		Actions:             parseStatBlockEntries(m.Actions),
+		Reactions:           parseStatBlockEntries(m.Reactions),
+		LegendaryActions:    parseStatBlockEntries(m.LegendaryActions),
+		Spellcasting:        parseStatBlockEntries(m.Spellcasting),
+		Notes:               m.Notes,
+	}
+}
+
+func handleAPIMonster(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/monsters/")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid monster id", 400)
+		return
+	}
+	m, err := q.GetMonster(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+	writeJSON(w, monsterDetailToDTO(m))
 }
 
 func handleAPIMaps(w http.ResponseWriter, _ *http.Request) {

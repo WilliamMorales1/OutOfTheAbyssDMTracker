@@ -34,7 +34,16 @@ CREATE TABLE Monsters (
     traits               TEXT,
     actions              TEXT,
     legendary_actions    TEXT,
-    notes                TEXT
+    notes                TEXT,
+    source               TEXT,
+    size                 TEXT,
+    alignment            TEXT,
+    passive_perception   INT,
+    vulnerabilities      TEXT,
+    environment          TEXT,
+    image_url            TEXT,
+    reactions            TEXT,
+    spellcasting         TEXT
 );
 
 CREATE TABLE Sessions (

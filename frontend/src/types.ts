@@ -21,15 +21,62 @@ export interface Npc {
 }
 
 export interface MonsterRow {
+  id: number
   name: string
   type: string
   cr: string
+  imageUrl: string
+}
+
+export interface MonsterStat {
+  id: number
+  name: string
+  ac: number
+  hp: number
+  dex: number
+}
+
+export interface StatBlockEntry {
+  name: string
+  text: string
+}
+
+export interface MonsterDetail {
+  id: number
+  name: string
+  type: string
+  size: string
+  alignment: string
+  cr: string
+  source: string
   hp: number
   hpFormula: string
   ac: number
   acDesc: string
   speed: string
+  str: number
   dex: number
+  con: number
+  int: number
+  wis: number
+  cha: number
+  savingThrows: string
+  skills: string
+  damageResistances: string
+  damageImmunities: string
+  vulnerabilities: string
+  conditionImmunities: string
+  senses: string
+  passivePerception: number
+  languages: string
+  environment: string
+  imageUrl: string
+  traits: StatBlockEntry[] | null
+  actions: StatBlockEntry[] | null
+  reactions: StatBlockEntry[] | null
+  legendaryActions: StatBlockEntry[] | null
+  spellcasting: StatBlockEntry[] | null
+  notes: string
 }
 
 export interface Marker {

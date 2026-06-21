@@ -1,6 +1,6 @@
 import { api } from '../api.js'
 import { h } from '../dom.js'
-import type { MonsterRow } from '../types.js'
+import type { MonsterStat } from '../types.js'
 
 interface Combatant {
   id: number
@@ -17,11 +17,11 @@ let round = 1
 let turn = 0
 
 let monstersLoaded = false
-const monsterMap = new Map<string, MonsterRow>()
+const monsterMap = new Map<string, MonsterStat>()
 
 async function loadMonsters() {
   if (monstersLoaded) return
-  const list = (await api.monsters()) as MonsterRow[]
+  const list = await api.monsterStats()
   for (const m of list) monsterMap.set(m.name, m)
   monstersLoaded = true
 }
@@ -34,7 +34,7 @@ export async function initiativePanel(): Promise<Node> {
   await loadMonsters()
 
   const root = h('div', {}, [])
-  let selectedMonster: MonsterRow | null = null
+  let selectedMonster: MonsterStat | null = null
 
   function sorted(): Combatant[] {
     return [...combatants].sort((a, b) => b.init - a.init)
@@ -141,7 +141,7 @@ export async function initiativePanel(): Promise<Node> {
     })
 
     const suggestions = h('div', {
-      className: 'initiative-suggestions list-group shadow rounded-2 overflow-hidden border border-secondary',
+      className: 'initiative-suggestions list-group shadow rounded-2 border border-secondary',
       style: 'position:fixed;z-index:2000;max-height:240px;overflow-y:auto;display:none',
     }) as HTMLDivElement
     document.body.append(suggestions)
@@ -151,7 +151,7 @@ export async function initiativePanel(): Promise<Node> {
       suggestions.innerHTML = ''
     }
 
-    function selectMonster(m: MonsterRow) {
+    function selectMonster(m: MonsterStat) {
       selectedMonster = m
       nameInput.value = m.name
       acInput.value = String(m.ac)
@@ -172,7 +172,10 @@ export async function initiativePanel(): Promise<Node> {
         return
       }
       const q = query.toLowerCase()
-      const matches = [...monsterMap.values()].filter((m) => m.name.toLowerCase().includes(q)).slice(0, 8)
+      const matches = [...monsterMap.values()]
+        .filter((m) => m.name.toLowerCase().includes(q))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice(0, 8)
       if (matches.length === 0) {
         hideSuggestions()
         return
