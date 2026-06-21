@@ -1,19 +1,6 @@
 -- name: ListNPCs :many
 SELECT id, name, madness, disposition, location, notes, description FROM NPCS ORDER BY name;
 
--- name: ListEncounters :many
-SELECT id, name, chapter, COALESCE(location, '') AS location, difficulty, levelup, notes
-FROM Encounters ORDER BY chapter, name;
-
--- name: ListEncounterMonsters :many
-SELECT em.encounter_id, m.name, m.cr, em.quantity
-FROM EncounterMonsters em
-JOIN Monsters m ON m.id = em.monster_id
-ORDER BY em.encounter_id,
-  CASE m.cr WHEN '1/8' THEN 0.125 WHEN '1/4' THEN 0.25 WHEN '1/2' THEN 0.5
-            ELSE CAST(m.cr AS REAL) END,
-  m.name;
-
 -- name: ListMonsters :many
 SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
   str, dex, con, int_score, wis, cha,

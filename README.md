@@ -1,10 +1,10 @@
 # OOTA — Out of the Abyss DM Companion
 
-A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks locations, NPCs, encounters, monsters, sessions, and campaign events. Includes a chat interface powered by a local LLM and semantic search over the campaign rulebook.
+A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks locations, NPCs, monsters, sessions, and campaign events. Includes a chat interface powered by a local LLM and semantic search over the campaign rulebook.
 
 ## Features
 
-- **Campaign data browser** — sortable/searchable tables for locations, NPCs, encounters, monsters, sessions, and events
+- **Campaign data browser** — sortable/searchable tables for locations, NPCs, monsters, sessions, and events
 - **DM chat assistant** — asks an Ollama-hosted LLM (gemma4) questions about the campaign; the model can query the database and search for answers
 - **Semantic search** — vector search over chunked campaign text using `nomic-embed-text-v2-moe` embeddings via Ollama
 - **Auto-migrations** — database schema and seed data applied automatically on startup via golang-migrate
@@ -66,7 +66,6 @@ Migrations live in `backend/migrations/` and are managed by [golang-migrate](htt
 | `001`   | Schema — all table definitions           |
 | `002`   | Seed locations (14 Underdark locations)   |
 | `003`   | Seed NPCs (25 characters)                 |
-| `004`   | Seed encounters (~55 encounter entries)   |
 | `005`   | Seed events (11 campaign events)          |
 | `006`   | Seed sessions (16 session guides)         |
 | `007`   | Seed monsters (full D&D 5e monster stats) |

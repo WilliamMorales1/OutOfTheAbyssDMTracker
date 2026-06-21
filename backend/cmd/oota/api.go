@@ -131,66 +131,6 @@ func handleAPIMonsters(w http.ResponseWriter, r *http.Request) {
 	listHandler(q.ListMonsters, monsterToDTO)(w, r)
 }
 
-type encounterMonsterDTO struct {
-	Name     string `json:"name"`
-	Cr       string `json:"cr"`
-	Quantity string `json:"quantity"`
-}
-
-type encounterDTO struct {
-	ID              int64                 `json:"id"`
-	Name            string                `json:"name"`
-	Chapter         int64                 `json:"chapter"`
-	Location        string                `json:"location"`
-	Difficulty      int64                 `json:"difficulty"`
-	DifficultyStars string                `json:"difficultyStars"`
-	Levelup         bool                  `json:"levelup"`
-	Notes           string                `json:"notes"`
-	Monsters        []encounterMonsterDTO `json:"monsters"`
-}
-
-func handleAPIEncounters(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	rows, err := q.ListEncounters(ctx)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	out := make([]encounterDTO, len(rows))
-	idIndex := map[int64]int{}
-	for i, e := range rows {
-		out[i] = encounterDTO{
-			ID:              e.ID,
-			Name:            e.Name.String,
-			Chapter:         e.Chapter.Int64,
-			Location:        e.Location,
-			Difficulty:      e.Difficulty.Int64,
-			DifficultyStars: stars(e.Difficulty.Int64),
-			Levelup:         e.Levelup.Bool,
-			Notes:           e.Notes.String,
-			Monsters:        []encounterMonsterDTO{},
-		}
-		idIndex[e.ID] = i
-	}
-
-	mRows, err := q.ListEncounterMonsters(ctx)
-	if err == nil {
-		for _, m := range mRows {
-			if idx, ok := idIndex[m.EncounterID.Int64]; ok {
-				out[idx].Monsters = append(out[idx].Monsters, encounterMonsterDTO{
-					Name:     m.Name,
-					Cr:       m.Cr.String,
-					Quantity: m.Quantity,
-				})
-			}
-		}
-	}
-
-	writeJSON(w, out)
-}
-
 func handleAPIMaps(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, gameMaps)
 }

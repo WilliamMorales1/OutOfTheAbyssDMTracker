@@ -1,8 +1,6 @@
 DELETE FROM Notes;
 DELETE FROM MapMarkers;
 DELETE FROM GameMaps;
-DELETE FROM EncounterMonsters;
 DELETE FROM Monsters;
 DELETE FROM Sessions;
-DELETE FROM Encounters;
 DELETE FROM NPCS;

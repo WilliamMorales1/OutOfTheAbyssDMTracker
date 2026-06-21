@@ -32,24 +32,6 @@ export interface MonsterRow {
   dex: number
 }
 
-export interface EncounterMonster {
-  name: string
-  cr: string
-  quantity: string
-}
-
-export interface Encounter {
-  id: number
-  name: string
-  chapter: number
-  location: string
-  difficulty: number
-  difficultyStars: string
-  levelup: boolean
-  notes: string
-  monsters: EncounterMonster[]
-}
-
 export interface Marker {
   i: number
   x: number

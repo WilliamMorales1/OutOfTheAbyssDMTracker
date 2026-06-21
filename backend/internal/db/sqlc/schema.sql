@@ -8,18 +8,6 @@ CREATE TABLE NPCS (
     notes       TEXT
 );
 
-CREATE TABLE Encounters (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT,
-    location    TEXT,
-    difficulty  INT,
-    status      TEXT,
-    enemies     TEXT,
-    chapter     INTEGER,
-    levelup     BOOLEAN,
-    notes       TEXT
-);
-
 CREATE TABLE Monsters (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     name                 TEXT UNIQUE NOT NULL,
@@ -47,13 +35,6 @@ CREATE TABLE Monsters (
     actions              TEXT,
     legendary_actions    TEXT,
     notes                TEXT
-);
-
-CREATE TABLE EncounterMonsters (
-    encounter_id INTEGER REFERENCES Encounters(id) ON DELETE CASCADE,
-    monster_id   INTEGER REFERENCES Monsters(id)   ON DELETE CASCADE,
-    quantity     TEXT NOT NULL DEFAULT '1',
-    PRIMARY KEY (encounter_id, monster_id)
 );
 
 CREATE TABLE Sessions (

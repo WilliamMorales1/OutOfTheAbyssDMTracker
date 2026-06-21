@@ -79,141 +79,6 @@ INSERT INTO NPCS (name, disposition, location, madness, description, notes) VALU
  'A mind flayer who has rejected the illithid collective and travels alone as a merchant of information. Appears calm and businesslike. Trades knowledge for knowledge.',
  'Useful recurring information broker in Part 2. Knows the locations of several demon lords and the routes to Vizeran''s tower. Cannot be fully trusted - will sell the party''s information to others. CR 7.');
 
--- Encounters
-INSERT INTO Encounters (name, location, difficulty, status, levelup, notes) VALUES
-('[Ch1] Escape from Velkynvelve', 'Velkynvelve', 3, 'planned', true,
- 'Party starts without equipment. Find gear in the equipment room; escape via webbed shafts or waterfall pool below (300 ft chasm). Jorlan can be turned - he has a master key. The rope bridge can be cut for a last-ditch escape. Dawn gong triggers Ilvara''s full response. Let creativity shine.'),
-('[Ch2] Encounter Check (d20 every 8 hrs)', NULL, 1, 'planned', false,
- 'Roll d20 every 8 hrs of travel. 1–13 = No encounter. 14–15 = Terrain (roll d20 on Terrain table). 16–17 = Creature (roll d20 on Creature table). 18–20 = Both terrain + creature.'),
-('[Ch2] Terrain Encounters (d20)', NULL, 1, 'planned', false,
- '1 Boneyard | 2 Cliff and ladder | 3 Crystal clusters | 4 Fungus cavern | 5 Gas leak | 6 Gorge | 7 High ledge | 8 Horrid sounds | 9 Lava swell | 10 Muck pit | 11 Rockfall | 12 Rope bridge | 13 Ruins | 14 Shelter | 15 Sinkhole | 16 Slime or mold | 17 Steam vent | 18 Underground stream | 19 Warning sign | 20 Webs'),
-('[Ch2] Creature Encounters (d20)', NULL, 2, 'planned', false,
- '1–2 Ambushers (reroll if resting) | 3 Carrion crawler | 4–5 Escaped slaves | 6–7 Fungi | 8–9 Giant fire beetles | 10–11 Giant "rocktopus" | 12 Mad creature | 13 Ochre jelly | 14–15 Raiders | 16 Scouts | 17 Society of Brilliance | 18 Spore servants | 19–20 Traders'),
-('[Ch2] Ambushers - Cliff/Ledge Sub-table (d20)', NULL, 2, 'planned', false,
- '1–2 1 chuul lurking in a pool | 3 1d6 giant spiders on walls/ceiling | 4–5 1 grell near high ceiling | 6–9 1d4 gricks in crevice | 10–15 1d4 orogs on ledges | 16–17 1d6 piercers (fake stalactites) | 18–20 1 umber hulk bursting from wall'),
-('[Ch2] Escaped Slaves Sub-table (d4)', NULL, 1, 'planned', false,
- '1 1d2 moon elf commoners | 2 1d3 shield dwarf commoners | 3 1d4 human commoners | 4 1d6 goblins'),
-('[Ch2] Fungi Sub-table (d6)', NULL, 1, 'planned', false,
- '1–2 1d4 gas spores | 3–4 1d4 shriekers | 5–6 1d4 violet fungi'),
-('[Ch2] Mad Creature Sub-table (d4)', NULL, 2, 'planned', false,
- '1 1 deep gnome | 2 1 drow | 3 1 duergar | 4 1 stone giant - all afflicted with short-term or long-term madness'),
-('[Ch2] Raiders Sub-table (d6)', NULL, 2, 'planned', false,
- '1–2 1d6 human bandits + 1 bandit captain | 3–4 2d4 goblins + 1 goblin boss | 5–6 1d6 orcs + 1 orc Eye of Gruumsh'),
-('[Ch2] Scouts Sub-table (d6)', NULL, 1, 'planned', false,
- '1–2 1 drow | 3–4 1d4 myconid adults | 5–6 1d6 shield dwarf scouts'),
-('[Ch2] Society of Brilliance Sub-table (d10)', NULL, 1, 'planned', false,
- '1–2 Y the derro savant | 3–4 Blurg the orog | 5–6 Grazilaxx the mind flayer | 7–8 Skriss the troglodyte | 9–10 Sloopidoop the kuo-toa archpriest'),
-('[Ch2] Spore Servants Sub-table (d10)', NULL, 2, 'planned', false,
- '1–3 1d4 drow spore servants | 4–6 1d6 duergar spore servants | 7–8 1d4 hook horror spore servants | 9–10 1d8 quaggoth spore servants'),
-('[Ch2] Traders Sub-table (d4)', NULL, 1, 'planned', false,
- '1 2d4 deep gnomes | 2 2d4 drow | 3 2d4 duergar | 4 2d4 kuo-toa'),
-('[Ch2] Silken Paths Encounters (d12)', 'The Silken Paths', 2, 'planned', false,
- '1 Cocooned lightfoot halfling (possibly alive) | 2 1d4 darkmantles | 3 1d4 drow + 1d4 quaggoth slaves | 4–8 2d4 giant spiders | 9 1 mimic | 10 1 spectator | 11–12 Web break (structural failure, DC 10 Acrobatics or fall)'),
-('[Ch2] Boneyard Undead Sub-table (d20)', NULL, 2, 'planned', false,
- '1–14 No encounter | 15–18 3d4 skeletons | 19–20 1d3 minotaur skeletons'),
-('[Ch2] Slime/Mold Sub-table (d6)', NULL, 1, 'planned', false,
- '1–3 Patch of green slime | 4–5 Patch of yellow mold | 6 Patch of brown mold'),
-('[Ch2] Demon Encounters (d20) - near corrupted zones', NULL, 3, 'planned', false,
- '1–14 No encounter | 15–16 1 invisible barlgura | 17–18 3d4 dretches | 19–20 1d2 shadow demons'),
-('[Ch3] Darklake Encounter Check (d20)', 'The Darklake', 1, 'planned', false,
- 'Roll d20 every 8 hrs on the Darklake. 1–13 No encounter | 14–15 Terrain (roll d10) | 16–17 Creature (roll d12) | 18–20 Both terrain + creature.'),
-('[Ch3] Darklake Terrain (d10)', 'The Darklake', 1, 'planned', false,
- '1 Collision | 2 Falls or locks | 3 Island | 4 Low ceiling | 5 Rockfall | 6 Rough current | 7 Run aground | 8 Stone teeth | 9 Tight passage | 10 Whirlpool'),
-('[Ch3] Darklake Creature Encounters (d12)', 'The Darklake', 2, 'planned', false,
- '1 1 aquatic troll | 2 2d4 darkmantles | 3 1d4+2 duergar in a keelboat | 4 1 green hag | 5 1 grell | 6–7 1d6+2 ixitxachitl | 8 1d4 kuo-toa in a keelboat | 9 1d4 merrow | 10 3d6 stirges | 11 1 swarm of quippers | 12 1 water weird'),
-('[Ch4] Gracklstugh City Encounters (d20)', 'Gracklstugh', 2, 'planned', false,
- '1–2 Abusive duergar guards | 3–4 Deep gnome merchant* | 5–7 Derro rioters* | 8–9 Drow emissary* | 10–12 Duergar patrol | 13–14 Mad duergar | 15–16 Orc mercenaries* | 17–18 Slave caravan | 19 Steeder handlers | 20 Themberchaud. (*) = potential ally or info source'),
-('[Ch4] Whorlstone Tunnels Encounters (d20)', 'Gracklstugh', 2, 'planned', false,
- '1–10 No encounter | 11–12 1 carrion crawler | 13 Demon pack | 14 1 flumph | 15 1 gray ooze | 16 1d4 moldy quaggoth spore servants | 17 1d4 two-headed grimlocks | 18 1 swarm of centipedes | 19 1 xorn | 20 Yellow mold'),
-('[Ch4] Darklake District Treasure (d4)', 'Gracklstugh', 1, 'planned', false,
- '1 Humanoid skeleton wearing ring of water walking | 2 Zurkhwood chest with 1d6×100 gp + 1d6 gems (50 gp each) | 3 Skeleton in leather armor: rusted shortsword + rotted quiver with 1d20 +1 arrows OR pouch with 1d10 +2 sling stones OR case with 1d4 +3 crossbow bolts | 4 +1 shield (rusted and non-magical on repeat)'),
-('[Ch4] Themberchaud - Dragon Audience', 'Gracklstugh', 4, 'planned', true,
- 'Themberchaud wants outside world information. Paranoid the Keepers are hiding things. Reward info generously. Do NOT let this become combat. If he goes berserk the city-escape scene is spectacular. Use his paranoia as a lever to engineer a distraction for the party''s exit.'),
-('[Ch5] Neverlight Grove Encounters (d20)', 'Neverlight Grove', 2, 'planned', false,
- '1–8 No encounter | 9–16 Fungi patch (roll d20 on Fungi table) | 17–18 1d4 nothics | 19–20 1 chasme on ceiling OR 1 vrock on ledge'),
-('[Ch5] Neverlight Fungi/Creature Table (d20)', 'Neverlight Grove', 2, 'planned', false,
- '1 1d6 barrelstalks | 2 2d6 bluecaps | 3 1d3 carrion crawlers | 4 1d4 drow spore servants + 1d4 quaggoth spore servants | 5 Fire lichen near thermal vent | 6 3d6 giant fire beetles | 7 1d4 myconid adults | 8 1d6 nightlights | 9 1 otyugh under offal | 10 Brown mold patch | 11 1d4 awakened zurkhwood | 12 2d4 sheets of ripplebark | 13 1d4 shriekers | 14 2d4 timmasks | 15 1d6 tongues of madness | 16 2d6 torchstalks | 17 2d6 trillimacs | 18 1d4 violet fungi | 19 2d4 waterorbs near spring | 20 1d4 zurkhwoods'),
-('[Ch5] Neverlight Grove - Zuggtmoy''s Wedding', 'Neverlight Grove', 4, 'planned', true,
- 'Zuggtmoy is performing her wedding to Araumycos. DC 15 Con save vs. spore infection (long-term madness). Primary goal: escape with evidence, warn Basidia. Basidia can seal tunnels. Do not fight Zuggtmoy directly.'),
-('[Ch6] Blingdenstone Encounters (d20)', 'Blingdenstone', 2, 'planned', false,
- '1–10 No encounter | 11 1d4+1 animated drow statues | 12 1d4+2 cave badgers | 13 Dungeon hazard (roll d6) | 14 Elemental vagabonds | 15 1d4+2 fiendish giant spiders | 16 1 ghost | 17 Mephit gang | 18 Roaming ooze (roll d4) | 19 1d4+1 svirfneblin wererats | 20 1 xorn'),
-('[Ch6] Blingdenstone Dungeon Hazards (d6)', 'Blingdenstone', 1, 'planned', false,
- '1–3 Patch of brown mold | 4–5 Patch of green slime | 6 Patch of yellow mold'),
-('[Ch6] Roaming Ooze Sub-table (d4)', 'Blingdenstone', 2, 'planned', false,
- '1 1 black pudding | 2 1 gelatinous cube | 3 1d4+1 gray oozes (one is psychic variant) | 4 1d2 ochre jellies'),
-('[Ch6] Pudding King''s Domain Oozes (d6)', 'Blingdenstone', 3, 'planned', false,
- '1–2 1 black pudding + 2 gray oozes | 3 1 gelatinous cube + 1 ochre jelly | 4–5 3 gray oozes + 1 ochre jelly | 6 2 black puddings'),
-('[Ch6] The Pudding King''s Court', 'Blingdenstone', 3, 'planned', true,
- 'Mad deep gnome consumed by Juiblex. Speaks in rhyming couplets. His "children" (the two black puddings) fight alongside him. Defeating him ends the ooze infestation. Rewards from gnomes: gem cache, safe passage, surface route info.'),
-('[Ch8] Gauntlgrym Approach Encounters (d20)', 'Gauntlgrym', 2, 'planned', false,
- '1–12 No encounter | 13 1 cloaker | 14 1d2 driders | 15 1 dwarf ghost (friendly unless attacked) | 16 Patrol: 6 shield dwarf veterans | 17 1 shield dwarf priest + 1d4+1 acolytes | 18 1d6+1 gargoyles | 19 1 grick alpha + 1d4+1 gricks | 20 1d4 rust monsters'),
-('[Ch8] Gauntlgrym Interior Encounters (d20)', 'Gauntlgrym', 3, 'planned', false,
- '1–14 No encounter | 15 1d4+1 doppelgangers (disguised as dwarves) | 16 1d2 fire elementals + 3d6 magmins | 17 1 salamander + 1d4+1 fire snakes | 18 1 spirit naga | 19 3d6 troglodytes | 20 1 wraith leading 1d6+1 specters'),
-('[Ch10] Part 2 Travel Event Table (d20)', NULL, 2, 'planned', false,
- '1–2 Battle aftermath | 3–6 Creature encounter (roll d20 on creature table) | 7–9 Demon encounter | 10–11 Discipline problem (NPC morale) | 12–13 Disease | 14–15 Madness | 16–17 Poisoned NPCs | 18–19 Spoiled supplies | 20 Vanishing NPCs'),
-('[Ch10] Part 2 Demon Encounters (d20)', NULL, 3, 'planned', false,
- '1–4 1d4 barlguras | 5–8 1d4 chasmes | 9–10 1d2 hezrous | 11–14 1d4 shadow demons | 15–18 1d3 vrocks | 19–20 Juiblex (CR 23 - survival only)'),
-('[Ch13] Wormwrithings Encounters (d20)', 'The Wormwrithings', 3, 'planned', false,
- '1–10 No encounter | 11 1 drider | 12 Drow hunting party | 13 3d6 dwarf commoners | 14 1d6 ettins | 15 3d6 flumphs | 16 Grick nest | 17 1 purple worm | 18 2d6 troglodytes | 19 1d4 trolls | 20 1 umber hulk'),
-('[Ch13] Wormwrithings Tunnel Encounters (d20)', 'The Wormwrithings', 3, 'planned', false,
- '1–15 No encounter | 16–18 1 giant spider (from area 11) | 19–20 1 purple worm'),
-('[Ch14] Labyrinth Encounters (d20)', 'The Labyrinth', 3, 'planned', false,
- '1–10 No encounter | 11 1 behir | 12 2d4 flumphs | 13 Gnoll pack | 14 1d4 grells | 15 1d4 hezrous | 16 4d8 manes | 17 2d4 minotaurs | 18 1 monodrone | 19 2d6 quaggoths | 20 1d4 shriekers'),
-('[Ch14] Labyrinth Hunting Ground (d20) - Baphomet''s territory', 'The Labyrinth', 4, 'planned', false,
- '1–10 No encounter | 11–12 Corpse | 13–14 Gnawed bones | 15–17 2d4 gnolls | 18–20 1d6 minotaurs. Baphomet patrols - players hear bellowing, getting closer each hour.'),
-('[Ch14] The Maze Engine Activation', 'The Labyrinth', 4, 'planned', true,
- 'Activating the Maze Engine triggers a Wild Magic surge (d10 table). Can banish a demon lord if triggered correctly during the final ritual. Baphomet is hunting - escape is a valid strategy. Minotaurs guard the engine''s antechamber.'),
-('[Ch15] Menzoberranzan Entry Patrols (d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–10 No encounter | 11–14 Drow patrol A (4 drow) | 15–17 Drow patrol B (6 drow + 1 mage) | 18–19 Drow patrol C (8 drow + 1 elite warrior) | 20 Drow patrol D (10 drow + 1 priestess)'),
-('[Ch15] Menzoberranzan Bazaar Encounters (d20)', 'Menzoberranzan', 2, 'planned', false,
- '1–2 2d4 bugbears | 3–4 Clandestine meeting | 5 1d4 driders | 6–10 Drow patrol | 11–12 1d4+1 drow spore servants | 13–14 Escaped slaves | 15–16 1d4+1 goblins | 17–19 (empty - reroll) | 20 1d4 intellect devourers'),
-('[Ch15] Menzoberranzan Narbondellyn District (d20)', 'Menzoberranzan', 2, 'planned', false,
- '1–2 1d4+2 bugbears | 3–8 Drow adolescents | 9–10 Drow pickpocket | 11–12 3d6 giant wolf spiders | 13–14 Infected drow | 15–16 Mad drow | 17–18 1 shield dwarf berserker | 19–20 Svirfneblin lure'),
-('[Ch15] Menzoberranzan Eastmyr Slave District (d20)', 'Menzoberranzan', 2, 'planned', false,
- '1–5 Drow patrol | 6–8 2d4+2 drow spore servants | 9–10 Escaped slaves | 11–14 1d6+2 giant wolf spiders | 15–20 Slave farmers'),
-('[Ch15] Menzoberranzan West Wall District (d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–4 Bregan D''aerthe spy | 5–8 Drow foot patrol | 9–12 Drow priestess of Lolth | 13–16 Spider nest | 17–20 Statue of Lolth'),
-('[Ch15] Menzoberranzan Duthcloim District (d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–5 Bregan D''aerthe spy | 6–10 Cult of ''Y'' (Demogorgon cultists) | 11–15 Drow foot patrol | 16–20 Scroll from Narbondel''s Shadow (encoded message - intelligence opportunity)'),
-('[Ch15] Menzoberranzan Tier Breche (d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–10 No encounter | 11 1 black pudding | 12 3d6 drow spore servants | 13 Elite drow foot patrol | 14 Exotic fungi (roll d6) | 15 1d4 giant spiders | 16 1d4 gricks | 17 Hunting party | 18 1 shrieker | 19 3d6 stirges | 20 1d4+1 violet fungi'),
-('[Ch15] Menzoberranzan Exotic Fungi (d6)', 'Menzoberranzan', 1, 'planned', false,
- '1 1d6 nightlights (50% unlit) | 2 2d6 Nilhogg''s noses | 3 1d6 patches of ormu | 4 2d6 timmasks | 5 1d6 tongues of madness | 6 3d6 torchstalks'),
-('[Ch15] Menzoberranzan Qu''ellarz''orl (Noble Tier, d20)', 'Menzoberranzan', 4, 'planned', false,
- '1–3 Beholder | 4–7 Bregan D''aerthe mercenaries | 8–12 Elite drow patrol | 13–16 Noble entourage | 17–20 Statue of Lolth'),
-('[Ch15] Menzoberranzan Donigarten (Farms, d20)', 'Menzoberranzan', 2, 'planned', false,
- '1–5 Elite drow patrol | 6–8 2d4 gargoyles | 9–10 1d6+2 giant wolf spiders | 11–14 Groundskeepers | 15–20 Slave parade'),
-('[Ch15] Menzoberranzan Sorcere (Mage Tower, d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–6 Drow acolytes | 7–12 Drow mages | 13–20 Drow warriors'),
-('[Ch15] Menzoberranzan Arach-Tinilith (Spider Temple, d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–3 Bandersnatches | 4–7 Bregan D''aerthe spy | 8–14 Drow foot patrol | 15–17 Slave abuse (social encounter) | 18–20 Statue of Lolth'),
-('[Ch15] Menzoberranzan Web Tunnels (d20)', 'Menzoberranzan', 3, 'planned', false,
- '1–6 1d4 drow mages | 7–8 1 giant spider | 9–10 1 invisible quasit | 11–12 1 mad drow mage | 13–14 1 shadow demon | 15–18 1d4 slaves | 19–20 1 succubus or incubus'),
-('[Ch16] Araumycos Travel Encounters (d20)', 'Araumycos', 3, 'planned', false,
- '1 Death tyrant | 2–6 Demons (roll d12) | 7–8 Gnoll pack | 9–10 Gricks | 11–14 Myconid parade | 15–18 Oozes | 19–20 Two-headed trolls'),
-('[Ch16] Fetid Wedding Demon Sub-table (d12)', 'Araumycos', 4, 'planned', false,
- '1–2 2d4 barlguras | 3–4 2d4 chasmes | 5–6 1d4 hezrous | 7–8 1d100 manes | 9–10 1 nalfeshnee | 11–12 2d4 vrocks'),
-('[Ch16] Fetid Wedding Fungi Hazards (d20)', 'Araumycos', 1, 'planned', false,
- '1–5 No encounter | 6–10 Fungi (roll d6) | 11–14 Mold pit | 15–17 Myconid parade | 18–20 Oozes'),
-('[Ch16] Fetid Wedding Fungi Detail (d6)', 'Araumycos', 1, 'planned', false,
- '1 1d6 gas spores | 2 1d6 violet fungi | 3–4 3d6 edible fungi (choose variety from ch2) | 5–6 3d6 exotic fungi (choose variety from ch2)'),
-('[Ch17] Demon Sortie Waves (d4)', 'Menzoberranzan', 4, 'planned', false,
- 'Waves hit every 2 rounds during the ritual: 1 = 4 barlguras | 2 = 4 chasmes | 3 = 2 hezrous | 4 = 3 vrocks'),
-('[Ch17] Battle Chaos Events (d6)', 'Menzoberranzan', 4, 'planned', false,
- '1–2 Explosion: DC 13 Dex save, 3d6 fire, 20 ft radius | 3–4 Flying Debris: DC 13 Dex save, 3d6 bludgeoning + prone, 30 ft radius | 5–6 Close Call: DC 13 Dex save, 3d6 bludgeoning to one character'),
-('[Ch17] Dark Heart Ritual - Final Battle', 'Menzoberranzan', 4, 'planned', true,
- 'Vizeran''s ritual draws all demon lords to one place. Protect the ritual site for 10 rounds while Vizeran casts. Each demon lord attacks one PC per round. On round 10 the ritual fires - all banished. If party discovered Vizeran''s true plan: DC 20 Arcana to modify the ritual to banish without destroying Menzoberranzan. Describe each lord''s banishment individually.'),
-('[Story] Drow Pursuit Escalation', NULL, 2, 'planned', false,
- 'Roll 1d20 every 3 days of travel. On 15+ the pursuit catches up. Ilvara grows more reckless each failure - escalating danger but also more intelligence opportunities if a scout is captured.'),
-('[Story] Arrival at Sloobludop', 'Sloobludop', 3, 'planned', true,
- 'Party is intended as sacrifices. Mid-ceremony Bloppblippodd''s faction attacks. Before anyone wins - Demogorgon arrives. Phase 3 = PURE SURVIVAL. Demogorgon is unkillable. Use him to destroy the town around them. Goal: reach the boats.'),
-('[Story] Demogorgon Rises at Sloobludop', 'Sloobludop', 4, 'planned', false,
- 'CRITICAL SET PIECE. Gaze attack (DC 23 Wis, madness on fail) fires every round at random targets. Buildings collapse. Goal: escape on boats. Anyone who stays to fight takes 70+ damage per round. Give each PC a personal escape moment.'),
-('[Story] Ilvara''s Final Pursuit', 'Blingdenstone', 3, 'planned', true,
- 'Final Part 1 confrontation. Ilvara is furious and reckless. Jorlan may switch sides if his resentment was cultivated. Ilvara uses Suggestion on strongest PC. Defeating her ends drow pursuit permanently.'),
-('[Story] Mantol-Derith Faction War', 'Mantol-Derith', 3, 'planned', true,
- 'Four factions tearing each other apart. Party must find Harper agent Khalessa Draga (poisoned). First PC to draw a weapon triggers everyone. Each faction has a piece of the truth about the demonic corruption.');
-
 -- Sessions
 INSERT INTO Sessions (session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs) VALUES
 (1, 'Escape from Velkynvelve', 'Ch 1', 1, 2,
@@ -1131,6 +996,26 @@ duergar alchemist and droki captured
 ');
 INSERT INTO Notes (name, content) VALUES ('sesh5.md', '# Session 5
 
-End of Gracklstugh and Start of Araumycos
+party:
+stool myconid
+shuushar kuotoa
+ront orc
+sarith drow
+Delta
+Yvnna - has 1 exhaustion
+eldeth dwarf
 
-two main myconid leaders: Basidia and Phylo');
+char -> connections
+shuushar -> Sloobludop (this sesh)
+sarith -> Neverlight Grove (sesh 6) (dies or turns)
+stool -> Neverlight Grove (sesh 6) and Araumycos (sesh 15)
+eldeth -> Waterdeep Council (sesh 8)
+derendil, jimjar, ront -> nothing
+
+eldeth will kill shuushar, then will try to kill Ront when caught, both fight to the death
+
+two main myconid leaders: Basidia and Phylo
+
+## left off at
+coming out of tunnels
+need to make batch evolve flavor');
