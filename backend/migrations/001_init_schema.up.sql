@@ -77,3 +77,28 @@ CREATE TABLE chapter_chunks (
     content       TEXT NOT NULL,
     embedding     TEXT NOT NULL
 );
+
+CREATE VIRTUAL TABLE chapter_chunks_fts USING fts5(
+    chapter_title,
+    content,
+    content='chapter_chunks',
+    content_rowid='id',
+    tokenize='porter unicode61'
+);
+
+CREATE TRIGGER chapter_chunks_ai AFTER INSERT ON chapter_chunks BEGIN
+    INSERT INTO chapter_chunks_fts(rowid, chapter_title, content)
+    VALUES (new.id, new.chapter_title, new.content);
+END;
+
+CREATE TRIGGER chapter_chunks_ad AFTER DELETE ON chapter_chunks BEGIN
+    INSERT INTO chapter_chunks_fts(chapter_chunks_fts, rowid, chapter_title, content)
+    VALUES ('delete', old.id, old.chapter_title, old.content);
+END;
+
+CREATE TRIGGER chapter_chunks_au AFTER UPDATE ON chapter_chunks BEGIN
+    INSERT INTO chapter_chunks_fts(chapter_chunks_fts, rowid, chapter_title, content)
+    VALUES ('delete', old.id, old.chapter_title, old.content);
+    INSERT INTO chapter_chunks_fts(rowid, chapter_title, content)
+    VALUES (new.id, new.chapter_title, new.content);
+END;

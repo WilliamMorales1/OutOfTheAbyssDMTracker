@@ -155,47 +155,136 @@ func handleAPIChat(w http.ResponseWriter, r *http.Request) {
 	}{q, answer})
 }
 
-func handleAPISearch(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("q")
+var reFTSTerm = regexp.MustCompile(`[A-Za-z0-9']+`)
+
+// ftsMatchQuery turns free text into an FTS5 MATCH expression. Each term is
+// prefix-matched and OR'd together so partial/misspelled words still surface
+// results, the same tolerant-matching behavior search engines use.
+func ftsMatchQuery(query string) string {
+	terms := reFTSTerm.FindAllString(query, -1)
+	if len(terms) == 0 {
+		return ""
+	}
+	quoted := make([]string, len(terms))
+	for i, t := range terms {
+		quoted[i] = `"` + strings.ReplaceAll(t, `"`, `""`) + `"*`
+	}
+	return strings.Join(quoted, " OR ")
+}
+
+// rrfConst is the standard reciprocal-rank-fusion constant used by hybrid
+// search systems (e.g. Elasticsearch, Azure AI Search) to blend independently
+// ranked result lists - here, BM25 keyword relevance and embedding similarity.
+const rrfConst = 60
+
+func searchLore(ctx context.Context, query string) ([]searchResult, error) {
 	if query == "" {
-		writeJSON(w, []searchResult{})
-		return
+		return []searchResult{}, nil
 	}
 
-	emb, err := queryEmbedding(r.Context(), query)
-	if err != nil {
-		http.Error(w, "Embedding error: "+err.Error(), 500)
-		return
+	type chunk struct {
+		chapterTitle string
+		content      string
 	}
+	fused := map[int]float64{}
+	chunks := map[int]chunk{}
 
-	rows, err := conn.QueryContext(r.Context(), `SELECT chapter_title, content, embedding FROM chapter_chunks`)
-	if err != nil {
-		http.Error(w, "Search error: "+err.Error(), 500)
-		return
-	}
-	defer rows.Close()
-
-	var results []searchResult
-	for rows.Next() {
-		var chapterTitle, content, embeddingJSON string
-		if err := rows.Scan(&chapterTitle, &content, &embeddingJSON); err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		score, err := cosineSimilarity(emb, embeddingJSON)
+	// Keyword relevance: SQLite FTS5 BM25 ranking.
+	if matchQ := ftsMatchQuery(query); matchQ != "" {
+		rows, err := conn.QueryContext(ctx,
+			`SELECT rowid, chapter_title, content FROM chapter_chunks_fts
+			 WHERE chapter_chunks_fts MATCH ? ORDER BY bm25(chapter_chunks_fts) LIMIT 25`, matchQ)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("search error: %w", err)
 		}
-		results = append(results, searchResult{ChapterTitle: chapterTitle, Content: content, Score: score})
-	}
-	sort.Slice(results, func(i, j int) bool { return results[i].Score > results[j].Score })
-	if len(results) > 5 {
-		results = results[:5]
-	}
-	if results == nil {
-		results = []searchResult{}
+		rank := 0
+		for rows.Next() {
+			var id int
+			var c chunk
+			if err := rows.Scan(&id, &c.chapterTitle, &c.content); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			rank++
+			fused[id] += 1.0 / float64(rrfConst+rank)
+			chunks[id] = c
+		}
+		rows.Close()
 	}
 
+	// Semantic relevance: embedding cosine similarity.
+	if emb, err := queryEmbedding(ctx, query); err == nil {
+		rows, err := conn.QueryContext(ctx, `SELECT id, chapter_title, content, embedding FROM chapter_chunks`)
+		if err != nil {
+			return nil, fmt.Errorf("search error: %w", err)
+		}
+		type scored struct {
+			id    int
+			chunk chunk
+			score float64
+		}
+		var semantic []scored
+		for rows.Next() {
+			var id int
+			var c chunk
+			var embeddingJSON string
+			if err := rows.Scan(&id, &c.chapterTitle, &c.content, &embeddingJSON); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			score, err := cosineSimilarity(emb, embeddingJSON)
+			if err != nil {
+				continue
+			}
+			semantic = append(semantic, scored{id, c, score})
+		}
+		rows.Close()
+		sort.Slice(semantic, func(i, j int) bool { return semantic[i].score > semantic[j].score })
+		if len(semantic) > 25 {
+			semantic = semantic[:25]
+		}
+		for rank, s := range semantic {
+			fused[s.id] += 1.0 / float64(rrfConst+rank+1)
+			chunks[s.id] = s.chunk
+		}
+	}
+
+	type idScore struct {
+		id    int
+		score float64
+	}
+	ranked := make([]idScore, 0, len(fused))
+	for id, score := range fused {
+		ranked = append(ranked, idScore{id, score})
+	}
+	sort.Slice(ranked, func(i, j int) bool { return ranked[i].score > ranked[j].score })
+	if len(ranked) > 5 {
+		ranked = ranked[:5]
+	}
+
+	results := []searchResult{}
+	maxScore := 0.0
+	if len(ranked) > 0 {
+		maxScore = ranked[0].score
+	}
+	for _, rs := range ranked {
+		c := chunks[rs.id]
+		norm := 0.0
+		if maxScore > 0 {
+			norm = rs.score / maxScore
+		}
+		results = append(results, searchResult{ChapterTitle: c.chapterTitle, Content: c.content, Score: norm})
+	}
+
+	return results, nil
+}
+
+func handleAPISearch(w http.ResponseWriter, r *http.Request) {
+	results, err := searchLore(r.Context(), r.URL.Query().Get("q"))
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	writeJSON(w, results)
 }
 

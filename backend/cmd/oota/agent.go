@@ -17,7 +17,7 @@ const ollamaURL = "http://localhost:11434/v1/chat/completions"
 const agentModel = "gemma4"
 
 const systemPrompt = `You are a D&D Dungeon Master assistant for "Out of the Abyss".
-Use the search and sql tools to answer questions about the campaign. Use web_search for general knowledge not in the database.
+Use the search and sql tools to answer questions about the campaign. Use lore_search for narrative/story lore from chapter text. Use web_search for general knowledge not in the database.
 
 Database schema:
   NPCS(id, name, madness int, disposition, location, notes, description)
@@ -93,6 +93,17 @@ var tools = []chatTool{
 	{Type: "function", Function: toolFunction{
 		Name:        "web_search",
 		Description: "Search the web for general information not in the campaign database.",
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"query": map[string]any{"type": "string", "description": "Search query"},
+			},
+			"required": []string{"query"},
+		},
+	}},
+	{Type: "function", Function: toolFunction{
+		Name:        "lore_search",
+		Description: "Search campaign lore (chapter text, hybrid keyword + semantic search) for narrative/story content.",
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
@@ -189,12 +200,30 @@ func executeTool(ctx context.Context, name, argsJSON string) string {
 	case "web_search":
 		query, _ := args["query"].(string)
 		return webSearch(ctx, query)
+	case "lore_search":
+		query, _ := args["query"].(string)
+		return loreSearchTool(ctx, query)
 	case "dnd_lookup":
 		category, _ := args["category"].(string)
 		index, _ := args["index"].(string)
 		return dndLookup(ctx, category, index)
 	}
 	return "Unknown tool: " + name
+}
+
+func loreSearchTool(ctx context.Context, query string) string {
+	results, err := searchLore(ctx, query)
+	if err != nil {
+		return "Search error: " + err.Error()
+	}
+	if len(results) == 0 {
+		return "No results found."
+	}
+	var sb strings.Builder
+	for _, r := range results {
+		fmt.Fprintf(&sb, "- %s (score %.2f)\n  %s\n\n", r.ChapterTitle, r.Score, r.Content)
+	}
+	return sb.String()
 }
 
 var reResult = regexp.MustCompile(`(?s)class="result__title"[^>]*>.*?<a[^>]*href="([^"]*)"[^>]*>(.*?)</a>.*?class="result__snippet"[^>]*>(.*?)</span>`)

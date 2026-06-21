@@ -30,15 +30,25 @@ const header = h('header', { className: 'bg-black py-3 mb-4 border-bottom border
 const navList = h('ul', { className: 'nav nav-tabs border-secondary mb-3' }, [])
 const panel = h('div', { className: 'bg-secondary bg-opacity-10 rounded p-3' }, [])
 
+const panelCache = new Map<string, Node>()
+
 async function activate(path: (typeof tabs)[number]['path']) {
   navList.querySelectorAll('button').forEach((btn) => {
     const isActive = btn.dataset.path === path
     btn.className = `nav-link bg-transparent ${isActive ? 'active text-warning border-warning' : 'text-light'}`
   })
+
+  const cached = panelCache.get(path)
+  if (cached) {
+    mount(panel, cached)
+    return
+  }
+
   panel.innerHTML = '<p>Loading...</p>'
   const tab = tabs.find((t) => t.path === path)!
   try {
     const node = await tab.load()
+    panelCache.set(path, node)
     mount(panel, node)
   } catch (err) {
     mount(panel, h('p', { className: 'text-danger' }, [String(err)]))

@@ -1,4 +1,4 @@
-.PHONY: build build-frontend build-backend run dev watch-frontend watch-backend clean reseed
+.PHONY: build build-frontend build-backend run dev watch-frontend watch-backend clean reseed ingest
 
 build: build-frontend build-backend
 
@@ -27,3 +27,6 @@ clean:
 
 reseed:
 	cd backend && go run ./cmd/migrate
+
+ingest:
+	cd backend && go run ./cmd/ingest-lore
