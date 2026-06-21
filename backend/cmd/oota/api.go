@@ -75,30 +75,6 @@ func handleAPISessions(w http.ResponseWriter, r *http.Request) {
 	listHandler(q.ListSessions, sessionToDTO)(w, r)
 }
 
-type locationDTO struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Danger      int64  `json:"danger"`
-	DangerStars string `json:"dangerStars"`
-	Description string `json:"description"`
-	Secrets     string `json:"secrets"`
-}
-
-func locationToDTO(l db.ListLocationsRow) locationDTO {
-	return locationDTO{
-		Name:        l.Name.String,
-		Type:        l.Type.String,
-		Danger:      l.Danger.Int64,
-		DangerStars: stars(l.Danger.Int64),
-		Description: l.Description.String,
-		Secrets:     l.Secrets.String,
-	}
-}
-
-func handleAPILocations(w http.ResponseWriter, r *http.Request) {
-	listHandler(q.ListLocations, locationToDTO)(w, r)
-}
-
 type npcDTO struct {
 	Name         string `json:"name"`
 	Madness      int64  `json:"madness"`
@@ -151,24 +127,6 @@ func monsterToDTO(m db.ListMonstersRow) monsterDTO {
 
 func handleAPIMonsters(w http.ResponseWriter, r *http.Request) {
 	listHandler(q.ListMonsters, monsterToDTO)(w, r)
-}
-
-type eventDTO struct {
-	Title       string `json:"title"`
-	Category    string `json:"category"`
-	Description string `json:"description"`
-}
-
-func eventToDTO(e db.Event) eventDTO {
-	return eventDTO{
-		Title:       e.Title.String,
-		Category:    e.Category.String,
-		Description: e.Description.String,
-	}
-}
-
-func handleAPIEvents(w http.ResponseWriter, r *http.Request) {
-	listHandler(q.ListEvents, eventToDTO)(w, r)
 }
 
 type encounterMonsterDTO struct {

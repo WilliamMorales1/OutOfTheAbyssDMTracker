@@ -1,40 +1,23 @@
-CREATE TABLE Locations (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT UNIQUE,
-    type        TEXT,
-    status      TEXT,
-    danger      INT,
-    description TEXT,
-    secrets     TEXT
-);
-
 CREATE TABLE NPCS (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     description TEXT,
     madness     INT,
     name        TEXT,
     disposition TEXT,
-    location    TEXT REFERENCES Locations(name),
+    location    TEXT,
     notes       TEXT
 );
 
 CREATE TABLE Encounters (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT,
-    location    TEXT REFERENCES Locations(name),
+    location    TEXT,
     difficulty  INT,
     status      TEXT,
     enemies     TEXT,
     chapter     INTEGER,
     levelup     BOOLEAN,
     notes       TEXT
-);
-
-CREATE TABLE Events (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    title       TEXT,
-    category    TEXT,
-    description TEXT
 );
 
 CREATE TABLE Monsters (

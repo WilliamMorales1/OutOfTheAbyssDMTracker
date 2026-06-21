@@ -1,49 +1,3 @@
--- Locations
-INSERT INTO Locations (name, type, status, danger, description, secrets) VALUES
-('Velkynvelve', 'dungeon', 'visited', 3,
- 'A drow outpost built into a cluster of stalactites and natural columns above a subterranean stream. Spider silk bridges connect the stalactite "buildings." Eight drow guards, two elite warriors, a priestess, and roughly 12 quaggoth thralls. The party begins here as prisoners.',
- 'Equipment room holds all confiscated party gear. Jorlan has a master key and can be bribed/turned. The spider cult shrine has a hidden cache of potions. Chasm below is 300 ft deep - escape route if players are creative.'),
-('The Silken Paths', 'wilderness', 'unknown', 2,
- 'A vast network of enormous spider webs strung across a massive cavern, connecting stalactites and rock spires. Some webs are strong enough to walk on; others are deceptively fragile. Multiple species of giant spider inhabit the region.',
- 'Web Sack: contains a lost drow supply pack with rope, pitons, and a potion of healing. A giant spider queen guards a cache of cocooned travelers - one may still be alive.'),
-('Sloobludop', 'city', 'unknown', 4,
- 'A kuo-toa settlement on the shores of the Darklake. Crude buildings of scavenged stone and bone. The town is split between two fanatical cults. The population (about 500 kuo-toa) has been driven into a collective fever by proximity to Demogorgon''s influence.',
- 'Demogorgon will physically arrive here at the chapter''s climax, rising from the Darklake. The party''s only goal when this happens is survival. Ploopploopeen plans to sacrifice the party. Bloppblippodd''s "Deep Father" is real - and is coming.'),
-('Gracklstugh', 'city', 'unknown', 3,
- 'The City of Blades. A massive duergar city built around volcanic activity and lit by the red glow of lava flows. Population ~10,000 duergar plus slaves. Center of duergar industry, weapons manufacture, and trade. Divided into Darklake District, Blade Bazaar, Laduguer''s Furrow, and Themberchaud''s Lair.',
- 'Demogorgon''s influence is causing waves of madness among the populace - civilians attacking each other, stone giants going berserk. The Whorlstone Tunnels beneath the city hold cultists worshipping Demogorgon. Themberchaud suspects he is being used and lied to. The Gray Ghosts thieves guild stole a dragon egg. A secret duergar clan (Clan Cairngorm) is infected with derro tunneling madness.'),
-('Neverlight Grove', 'wilderness', 'unknown', 3,
- 'A massive cavern lit by bioluminescent fungi of breathtaking beauty. Home to thousands of myconids led by two sovereigns. Normally peaceful and welcoming - but now deeply corrupted by Zuggtmoy''s presence. Strange flowers bloom in impossible colors. Spores hang thick in the air.',
- 'Zuggtmoy is hiding in the Fungal Court at the center of the grove, performing a "wedding" ritual with the myconid population. Sovereign Basidia is not yet corrupted and is afraid. The Circle of Masters contains evidence of the corruption. Attending the wedding ceremony risks permanent spore infection (Zuggtmoy''s domain power).'),
-('Blingdenstone', 'city', 'unknown', 3,
- 'The deep gnome city, partially rebuilt after its destruction by drow. Currently under siege from within by a colony of oozes and the spirit of the Pudding King (a mad gnome consumed by Juiblex). The city is divided into functional districts and the haunted Goldwhisker Quarter, held by wererats.',
- 'The Pudding King is in the deepest cavern with his "children" - two massive oozes named Glabbagool and the Royal Ooze. Topsy and Turvy''s wererat kin live in Goldwhisker Quarter. The gnomes are desperate - they will grant the party full access and rewards for clearing the ooze infestation.'),
-('The Darklake', 'wilderness', 'unknown', 3,
- 'A vast underground lake system - hundreds of miles of interconnected waterways, tunnels, and islands. The primary travel route between Sloobludop, Gracklstugh, and the western Underdark. Inhabited by aquatic monsters: plesiosaurs, giant octopuses, kuo-toa, and worse.',
- 'Demogorgon''s physical form has been partially manifesting beneath the Darklake''s deepest waters since his summoning. Islands in the Darklake include: Isle of Rezz (kuo-toa trading post), Flowing Stones (home to a water weird), and the Sunken Tower (submerged wizard''s tower with a waterbreathing amulet).'),
-('Gauntlgrym', 'city', 'unknown', 2,
- 'The ancient dwarven city reclaimed by Bruenor Battlehammer and his clan. A monumental forge-city built around the Hosttower''s power and a primordial fire titan imprisoned beneath. Heavily defended, politically significant.',
- 'Bruenor will receive the party if they have Eldeth''s shield or credible news of demon lords. The city is a staging ground for a potential Underdark military expedition. Lords of Waterdeep can be contacted here via sending stone.'),
-('Mantol-Derith', 'city', 'unknown', 3,
- 'A secret trading post at the intersection of several Underdark factions - drow, duergar, svirfneblin, and illithid all conduct neutral trade here under a strict code of conduct. Demogorgon''s madness has broken the truce and the settlement is tearing itself apart.',
- 'A Harper agent (Khalessa Draga) is here and desperate for rescue. The trading post''s four factions have turned on each other - each blaming the others for a theft. Demogorgon''s corrupting influence caused it all. Access to Vizeran''s tower requires navigating the ruins of this truce.'),
-('Araj - Vizeran''s Tower', 'dungeon', 'unknown', 2,
- 'A remote, cunningly hidden tower of black stone in a desolate stretch of the Underdark. Vizeran DeVir has lived here in secret for centuries, amassing vast arcane knowledge in exile. The tower is trapped, warded, and absolutely isolated.',
- 'Vizeran''s real plan: the Dark Heart ritual, if completed, will unleash a catastrophic wave of power centered on Menzoberranzan - not merely banishing demons but potentially destroying the city and killing thousands. The party must decide if helping him is worth it.'),
-('Menzoberranzan', 'city', 'unknown', 5,
- 'The City of Spiders. The greatest drow city in the Underdark. Population ~20,000. Ruled by the Ruling Council (eight matron mothers of noble houses). Lit by faerie fire in blues and greens. Cradle of drow civilization and the source of the crisis.',
- 'Gromph Baenre''s ritual caused the demon summoning. House Baenre is suppressing this information. The city is barely holding together as demon lords'' influence drives citizens to violence. The party can negotiate with Matron Mother Triel for support in exchange for keeping the city''s secrets.'),
-('The Wormwrithings', 'wilderness', 'unknown', 4,
- 'A vast network of enormous tunnels bored by purple worms. The passages are massive - wide enough for wagons but prone to sudden purple worm emergence. Also inhabited by cloakers, ropers, and gibbering mouthers.',
- 'One tunnel system leads directly to the lair of Yeenoghu, who has established a hunting ground here and is driving gnoll warbands through the region in a frenzy of slaughter.'),
-('The Labyrinth', 'dungeon', 'unknown', 5,
- 'Baphomet''s domain - a vast, impossible maze carved into the Underdark over centuries of his influence. The tunnels shift, dead ends appear and vanish, and the entire region is saturated with his minotaur-hunting madness. The Maze Engine (a ancient modron artifact) is located here.',
- 'The Maze Engine can alter reality locally when activated. A series of wild magic effects occurs when it runs. Baphomet hunts here personally. The engine can be used to banish a demon lord if triggered correctly during the final ritual.'),
-('Araumycos', 'wilderness', 'unknown', 3,
- 'The largest living organism in the Forgotten Realms - a colossal fungal colony that occupies much of the northern Underdark. Zuggtmoy has been communing with Araumycos, attempting to use it as a vessel for her power and a weapon of world-ending scope.',
- 'If Zuggtmoy fully merges with Araumycos, the resulting entity would be effectively impossible to stop. The merger must be disrupted as part of the ritual components Vizeran requires (her spores). Time pressure: the longer Part 2 takes, the closer the merger gets.')
-ON CONFLICT (name) DO NOTHING;
-
 -- NPCs
 INSERT INTO NPCS (name, disposition, location, madness, description, notes) VALUES
 ('Buppido', 'neutral', 'Velkynvelve', 4,
@@ -259,31 +213,6 @@ INSERT INTO Encounters (name, location, difficulty, status, levelup, notes) VALU
  'Final Part 1 confrontation. Ilvara is furious and reckless. Jorlan may switch sides if his resentment was cultivated. Ilvara uses Suggestion on strongest PC. Defeating her ends drow pursuit permanently.'),
 ('[Story] Mantol-Derith Faction War', 'Mantol-Derith', 3, 'planned', true,
  'Four factions tearing each other apart. Party must find Harper agent Khalessa Draga (poisoned). First PC to draw a weapon triggers everyone. Each faction has a piece of the truth about the demonic corruption.');
-
--- Events
-INSERT INTO Events (title, category, description) VALUES
-('Gromph''s Ritual Shatters the Wards', 'story',
- 'Gromph Baenre, Archmage of Menzoberranzan, performs a catastrophic ritual using the demon-tainted Demon Weave. Every ward imprisoning demon lords in the Abyss is weakened simultaneously. Demogorgon, Baphomet, Juiblex, Zuggtmoy, Orcus, Yeenoghu, and others pour through into the Underdark. This is the event that caused everything - the party does not learn the full truth until Chapter 15.'),
-('Party Captured at Velkynvelve', 'story',
- 'The player characters are captured by a drow patrol and imprisoned at the Velkynvelve outpost under Mistress Ilvara Mizzrym''s command. Chapter 1 begins here.'),
-('Demogorgon Destroys Sloobludop', 'demon',
- 'Chapter 3 climax. Demogorgon physically rises from the Darklake at Sloobludop, destroying the settlement and massacring its kuo-toa population in minutes. The party flees on boats. This is the players'' first direct encounter with the scale of the demon lord threat.'),
-('Gracklstugh Falls to Madness', 'demon',
- 'Chapter 4. Demogorgon''s influence drives waves of madness through Gracklstugh''s duergar population. Stone giants go berserk. Derro cultists perform open rituals. The city''s rigid order begins to crack. Themberchaud''s patience with the Keepers of the Flame may snap.'),
-('Zuggtmoy''s Wedding in Neverlight Grove', 'demon',
- 'Chapter 5. Zuggtmoy is conducting a ritual "wedding" to Araumycos, the continent-spanning fungal organism. If completed, she will possess Araumycos and become an unstoppable force. The myconid population of Neverlight Grove has been almost entirely subverted.'),
-('Party Reaches the Surface', 'story',
- 'End of Part 1 (Chapter 9). After weeks in the Underdark, the party escapes to the surface world. They must deliver news of the demon lord incursion to the Lords'' Alliance or appropriate authorities. This is the chapter break between Part 1 and Part 2.'),
-('Council of Waterdeep - Call to Return', 'faction',
- 'Chapter 10. Surface authorities - Lords of Waterdeep, Order of the Gauntlet, Harpers, Emerald Enclave, Zhentarim - convene an emergency council. After debriefing the party, they are commissioned to return to the Underdark with resources and allies to address the demon lord threat.'),
-('Mantol-Derith Faction War', 'faction',
- 'Chapter 11. The neutral trading ground of Mantol-Derith has collapsed into violence as Demogorgon''s madness infects each faction. The party must navigate chaos, rescue Harper agent Khalessa Draga, and find the path to Vizeran''s tower.'),
-('Vizeran''s Bargain Accepted', 'story',
- 'Chapter 12. The party meets Vizeran DeVir and learns of the Dark Heart ritual. He provides the components list and the knowledge to execute it. His assistance is invaluable - and comes with a hidden cost.'),
-('Vizeran''s True Plan Revealed', 'story',
- 'Late Chapter 12 / Chapter 15. Investigation or magical means reveal that Vizeran''s ritual, as written, will not merely banish the demon lords - it will release the accumulated energy of their banishment directly into Menzoberranzan, likely killing tens of thousands. The party must decide whether to help him, modify the ritual, or find another way.'),
-('Dark Heart Ritual - Demon Lords Banished', 'story',
- 'Chapter 17 (Finale). The ritual is completed at Menzoberranzan. Demon lords are drawn to one place and banished back to the Abyss. The exact outcome depends on whether the party discovered and addressed Vizeran''s true plan. Either way, the campaign ends here.');
 
 -- Sessions
 INSERT INTO Sessions (session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs) VALUES

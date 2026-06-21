@@ -6,10 +6,8 @@ async function getJSON<T>(url: string): Promise<T> {
 
 export const api = {
   sessions: () => getJSON('/api/sessions'),
-  locations: () => getJSON('/api/locations'),
   npcs: () => getJSON('/api/npcs'),
   encounters: () => getJSON('/api/encounters'),
-  events: () => getJSON('/api/events'),
   monsters: () => getJSON('/api/monsters'),
   maps: () => getJSON('/api/maps'),
   search: (q: string) => getJSON(`/api/search?q=${encodeURIComponent(q)}`),

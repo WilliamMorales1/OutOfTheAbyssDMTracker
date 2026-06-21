@@ -10,15 +10,6 @@ export interface Session {
   checkpoint: string
 }
 
-export interface Location {
-  name: string
-  type: string
-  danger: number
-  dangerStars: string
-  description: string
-  secrets: string
-}
-
 export interface Npc {
   name: string
   madness: number
@@ -38,12 +29,6 @@ export interface MonsterRow {
   ac: number
   acDesc: string
   speed: string
-}
-
-export interface EventRow {
-  title: string
-  category: string
-  description: string
 }
 
 export interface EncounterMonster {

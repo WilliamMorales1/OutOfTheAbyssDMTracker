@@ -1,24 +1,22 @@
 import { h, mount } from './dom.js'
 import { sessionsPanel } from './panels/sessions.js'
-import { locationsPanel } from './panels/locations.js'
 import { npcsPanel } from './panels/npcs.js'
 import { encountersPanel } from './panels/encounters.js'
 import { monstersPanel } from './panels/monsters.js'
-import { eventsPanel } from './panels/events.js'
 import { mapsPanel } from './panels/maps.js'
 import { chatPanel } from './panels/chat.js'
 import { searchPanel } from './panels/search.js'
 import { notesPanel } from './panels/notes.js'
+import { initiativePanel } from './panels/initiative.js'
 
 const tabs = [
   { name: 'Sessions', path: 'sessions', load: sessionsPanel },
-  { name: 'Session Notes', path: 'notes', load: notesPanel },
-  { name: 'Locations', path: 'locations', load: locationsPanel },
+  { name: 'Notes', path: 'notes', load: notesPanel },
   { name: 'NPCs', path: 'npcs', load: npcsPanel },
   { name: 'Encounters', path: 'encounters', load: encountersPanel },
   { name: 'Monsters', path: 'monsters', load: monstersPanel },
-  { name: 'Events', path: 'events', load: eventsPanel },
   { name: 'Maps', path: 'maps', load: mapsPanel },
+  { name: 'Initiative', path: 'initiative', load: async () => initiativePanel() },
   { name: 'Ask Agent', path: 'chat', load: async () => chatPanel() },
   { name: 'Lore Search', path: 'search', load: async () => searchPanel() },
 ] as const

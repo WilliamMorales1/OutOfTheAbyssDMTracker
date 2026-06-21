@@ -1,6 +1,3 @@
--- name: ListLocations :many
-SELECT id, name, type, danger, description, secrets FROM Locations ORDER BY name;
-
 -- name: ListNPCs :many
 SELECT id, name, madness, disposition, location, notes, description FROM NPCS ORDER BY name;
 
@@ -16,9 +13,6 @@ ORDER BY em.encounter_id,
   CASE m.cr WHEN '1/8' THEN 0.125 WHEN '1/4' THEN 0.25 WHEN '1/2' THEN 0.5
             ELSE CAST(m.cr AS REAL) END,
   m.name;
-
--- name: ListEvents :many
-SELECT id, title, category, description FROM Events ORDER BY title;
 
 -- name: ListMonsters :many
 SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
