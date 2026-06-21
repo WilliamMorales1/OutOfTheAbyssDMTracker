@@ -29,6 +29,7 @@ export interface MonsterRow {
   ac: number
   acDesc: string
   speed: string
+  dex: number
 }
 
 export interface EncounterMonster {

@@ -110,6 +110,7 @@ type monsterDTO struct {
 	Ac        int64  `json:"ac"`
 	AcDesc    string `json:"acDesc"`
 	Speed     string `json:"speed"`
+	Dex       int64  `json:"dex"`
 }
 
 func monsterToDTO(m db.ListMonstersRow) monsterDTO {
@@ -122,6 +123,7 @@ func monsterToDTO(m db.ListMonstersRow) monsterDTO {
 		Ac:        m.Ac.Int64,
 		AcDesc:    m.AcDesc.String,
 		Speed:     m.Speed.String,
+		Dex:       m.Dex.Int64,
 	}
 }
 
