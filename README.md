@@ -12,7 +12,10 @@ A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks NPCs,
 
 ## Requirements
 
-- Go 1.22+
+- Go 1.26+ (pinned via `go 1.26.4` in `backend/go.mod`)
+- [Node.js](https://nodejs.org) (npm) — compiles the frontend with `tsc` (no bundler)
+- GNU Make — runs the `Makefile` targets. Not installed by default on Windows; e.g. `winget install ezwinports.make`
+- [sqlc](https://sqlc.dev) CLI — generates `backend/internal/db/*.go` from `backend/internal/db/sqlc/{schema,queries}.sql`. These generated files are gitignored, so `sqlc generate` must be run once before the backend will build: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`, then `sqlc generate` from `backend/internal/db/sqlc/`
 - [Ollama](https://ollama.ai) running locally on port 11434 with these models pulled (only needed for chat/lore search):
   - chat model used by the agent
   - `nomic-embed-text-v2-moe` (embeddings)
