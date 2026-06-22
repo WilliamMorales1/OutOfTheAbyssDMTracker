@@ -1,41 +1,27 @@
 # OOTA — Out of the Abyss DM Companion
 
-A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks locations, NPCs, monsters, sessions, and campaign events. Includes a chat interface powered by a local LLM and semantic search over the campaign rulebook.
+A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks NPCs, monsters, sessions, maps, notes, and initiative — plus a chat assistant and semantic lore search powered by a local LLM.
 
 ## Features
 
-- **Campaign data browser** — sortable/searchable tables for locations, NPCs, monsters, sessions, and events
-- **DM chat assistant** — asks an Ollama-hosted LLM (gemma4) questions about the campaign; the model can query the database and search for answers
-- **Semantic search** — vector search over chunked campaign text using `nomic-embed-text-v2-moe` embeddings via Ollama
-- **Auto-migrations** — database schema and seed data applied automatically on startup via golang-migrate
+- **Campaign data browser** — sortable/searchable panels for NPCs, monsters, sessions, maps, and notes
+- **Initiative tracker** — auto-fills combatants from the monster bestiary
+- **DM chat assistant** — asks an Ollama-hosted LLM questions about the campaign; the model can query the database and search for answers
+- **Lore search** — semantic vector search over the chunked *Out of the Abyss* adventure text using `nomic-embed-text-v2-moe` embeddings via Ollama
+- **Auto-migrations** — SQLite schema applied automatically on startup via golang-migrate
 
 ## Requirements
 
 - Go 1.22+
-- PostgreSQL
-- [Ollama](https://ollama.ai) running locally on port 11434 with these models pulled:
-  - `gemma4` (chat)
+- [Ollama](https://ollama.ai) running locally on port 11434 with these models pulled (only needed for chat/lore search):
+  - chat model used by the agent
   - `nomic-embed-text-v2-moe` (embeddings)
+
+No external database setup is required — the app uses an embedded SQLite database (`backend/oota.db`), created automatically on first run.
 
 ## Setup
 
-**1. Create the database**
-
-```bash
-createdb oota
-```
-
-**2. Configure the connection**
-
-The connection string is hardcoded in `backend/main.go`:
-
-```go
-const dbURL = "postgres://USER:PASSWORD@localhost/oota?sslmode=disable"
-```
-
-Update it to match your PostgreSQL credentials before building.
-
-**3. Build and run**
+**1. Build and run**
 
 From the repo root, via the `Makefile`:
 
@@ -46,43 +32,38 @@ make run     # build, then run backend/oota
 
 Migrations run automatically on startup. The app listens on `http://localhost:8080` and serves the built frontend from `frontend/dist`. The binary expects to run from `backend/` (it reads `migrations/`, `images/`, and `../frontend/dist` relative to that directory).
 
+**2. Seed campaign data (optional, requires network + Ollama)**
+
+```bash
+make reseed
+```
+
+Runs migrations, then `ingest-5etools` (downloads monster stat blocks + fluff images from the 5etools data mirror into the Monsters table) and `ingest-lore` (downloads the OOTA adventure text, chunks it, embeds it, and loads it for Lore Search).
+
 **Live reload for development:**
 
 ```bash
-make watch-frontend   # tsc --watch, recompiles frontend on save
-make watch-backend    # air, rebuilds + restarts backend on save (requires air: go install github.com/air-verse/air@latest)
+make watch
 ```
 
-Run both in separate terminals, then refresh the browser at `http://localhost:8080`.
+Runs `npm run watch` for the frontend and `air` for the backend (requires air: `go install github.com/air-verse/air@latest`).
 
 Other targets: `make build-frontend`, `make build-backend`, `make dev` (frontend build + `go run`, no binary), `make clean`.
 
 ## Database migrations
 
-Migrations live in `backend/migrations/` and are managed by [golang-migrate](https://github.com/golang-migrate/migrate).
+Migrations live in `backend/migrations/` and are managed by [golang-migrate](https://github.com/golang-migrate/migrate) against SQLite.
 
-| Migration | Contents                                  |
-| --------- | ----------------------------------------- |
-| `001`   | Schema — all table definitions           |
-| `002`   | Seed locations (14 Underdark locations)   |
-| `003`   | Seed NPCs (25 characters)                 |
-| `005`   | Seed events (11 campaign events)          |
-| `006`   | Seed sessions (16 session guides)         |
-| `007`   | Seed monsters (full D&D 5e monster stats) |
-| `008`   | Add checkpoint column to sessions         |
-| `009`   | Seed maps                                 |
-| `010`   | Drop DM notes column from sessions        |
+| Migration | Contents                                          |
+| --------- | -------------------------------------------------- |
+| `001`   | Schema — all table definitions                    |
+| `002`   | Seed data (NPCs, sessions, maps)                  |
+| `003`   | Monster schema for 5etools-sourced bestiary data  |
 
 To run migrations manually:
 
 ```bash
-migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?sslmode=disable" up
-```
-
-To roll back:
-
-```bash
-migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?sslmode=disable" down
+go run ./backend/cmd/migrate
 ```
 
 ## Tech stack
@@ -92,7 +73,7 @@ migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?
 | Backend language | Go                                                       |
 | HTTP             | `net/http` (JSON API)                                  |
 | Frontend         | TypeScript, compiled via `tsc`, no bundler/framework     |
-| Database driver  | `pgx/v4`                                               |
+| Database         | SQLite (`modernc.org/sqlite`)                          |
 | SQL codegen      | [sqlc](https://sqlc.dev)                                    |
 | Migrations       | [golang-migrate](https://github.com/golang-migrate/migrate) |
 | LLM / embeddings | [Ollama](https://ollama.ai) (local)                         |
@@ -102,17 +83,17 @@ migrate -path backend/migrations -database "postgres://user:pass@localhost/oota?
 ```
 .
 ├── backend/
-│   ├── cmd/oota/
-│   │   ├── main.go       # HTTP server, routes, migration runner
-│   │   ├── agent.go      # LLM chat handler, tool loop, vector embedding search
-│   │   └── api.go        # JSON API handlers
-│   ├── internal/db/      # sqlc-generated DB layer
-│   │   └── sqlc/         # SQL schema and queries + sqlc config
-│   ├── migrations/       # golang-migrate SQL migration files
-│   ├── images/           # static map images, served at /images
-│   ├── notes/            # session notes markdown, served via notes API
-│   ├── .air.toml         # live-reload config for `make watch-backend`
+│   ├── cmd/
+│   │   ├── oota/             # HTTP server: main.go, agent.go (LLM chat + tool loop), api.go (JSON API)
+│   │   ├── migrate/          # standalone migration runner
+│   │   ├── ingest-5etools/   # downloads monster bestiary data into the DB
+│   │   └── ingest-lore/      # downloads + chunks + embeds adventure text for Lore Search
+│   ├── internal/db/          # sqlc-generated DB layer
+│   │   └── sqlc/             # SQL schema and queries + sqlc config
+│   ├── migrations/           # golang-migrate SQL migration files (SQLite)
+│   ├── images/                # static images, served at /images
 │   └── go.mod / go.sum
-├── frontend/             # TypeScript app (tsc only), built to frontend/dist
-└── Makefile              # build/run/watch targets for both frontend and backend
+├── frontend/
+│   └── src/panels/           # chat, initiative, maps, monsters, notes, npcs, sessions, search
+└── Makefile                  # build/run/watch targets for both frontend and backend
 ```
