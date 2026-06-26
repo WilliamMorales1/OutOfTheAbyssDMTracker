@@ -534,11 +534,13 @@ eldeth -> Waterdeep Council (sesh 8)
 derendil, jimjar, ront -> nothing
 
 eldeth will kill shuushar, then will try to kill Ront when caught, both fight to the death
+sarith is going to explode in a burst of spores, and transform into a [find mushroom demon here]
+
 
 two main myconid leaders: Basidia and Phylo
 
 ## left off at
 coming out of tunnels
-need to make batch evolve flavor
+need to make batch evolve flavor (dragon egg)
 
-'' test');
+');

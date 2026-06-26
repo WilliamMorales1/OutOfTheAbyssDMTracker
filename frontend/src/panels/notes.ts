@@ -16,7 +16,7 @@ export async function notesPanel(): Promise<Node> {
   const newNameInput = h('input', {
     type: 'text',
     className: 'form-control bg-dark text-light border-secondary',
-    placeholder: 'new-note-name.md',
+    placeholder: 'new-note.md',
   }) as HTMLInputElement
   const newBtn = h('button', { type: 'submit', className: 'btn btn-outline-warning' }, ['Create'])
   const newStatus = h('span', { className: 'ms-2' }, [])
