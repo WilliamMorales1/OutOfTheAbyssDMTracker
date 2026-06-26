@@ -56,3 +56,23 @@ mark {
   background-color: #000;
 }
 
+/* Natural Syntax LSP semantic token colours */
+.ns-token-keyword    { color: #569cd6 !important; }
+.ns-token-function   { color: #dcdcaa !important; }
+.ns-token-variable   { color: #9cdcfe !important; }
+.ns-token-type       { color: #4ec9b0 !important; }
+.ns-token-class      { color: #4ec9b0 !important; }
+.ns-token-string     { color: #ce9178 !important; }
+.ns-token-number     { color: #b5cea8 !important; }
+.ns-token-comment    { color: #6a9955 !important; font-style: italic; }
+.ns-token-operator   { color: #d4d4d4 !important; }
+.ns-token-parameter  { color: #9cdcfe !important; font-style: italic; }
+.ns-token-property   { color: #9cdcfe !important; }
+.ns-token-macro      { color: #c586c0 !important; }
+.ns-token-modifier   { color: #c586c0 !important; }
+.ns-token-namespace  { color: #c8c8c8 !important; }
+.ns-token-enum       { color: #4ec9b0 !important; }
+.ns-token-enumMember { color: #4fc1ff !important; }
+.ns-token-struct     { color: #4ec9b0 !important; }
+.ns-token-decorator  { color: #dcdcaa !important; }
+

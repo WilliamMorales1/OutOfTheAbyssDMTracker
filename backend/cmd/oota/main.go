@@ -139,6 +139,7 @@ func main() {
 	mux.HandleFunc("/api/chat", handleAPIChat)
 	mux.HandleFunc("/api/search", handleAPISearch)
 	mux.HandleFunc("/api/notes", handleAPINotesList)
+	mux.HandleFunc("/api/notes/lsp", handleNotesLSP)
 	mux.HandleFunc("/api/notes/", handleAPINote)
 	mux.HandleFunc("/", serveFrontend)
 
