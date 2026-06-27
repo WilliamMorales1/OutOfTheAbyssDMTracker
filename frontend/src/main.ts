@@ -33,6 +33,9 @@ const panel = h('div', { className: 'bg-secondary bg-opacity-10 rounded p-3' }, 
 const panelCache = new Map<string, Node>()
 
 async function activate(path: (typeof tabs)[number]['path']) {
+  const currentChild = panel.firstChild as any
+  if (typeof currentChild?.__saveIfDirty === 'function') await currentChild.__saveIfDirty()
+
   navList.querySelectorAll('button').forEach((btn) => {
     const isActive = btn.dataset.path === path
     btn.className = `nav-link bg-transparent ${isActive ? 'active text-warning border-warning' : 'text-light'}`
