@@ -127,6 +127,9 @@ func main() {
 	if err := loadGameMaps(ctx); err != nil {
 		log.Fatalf("load maps: %v", err)
 	}
+	if err := syncNotesFromDisk(ctx); err != nil {
+		log.Fatalf("sync notes: %v", err)
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))

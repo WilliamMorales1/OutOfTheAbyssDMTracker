@@ -100,3 +100,5 @@ go run ./backend/cmd/migrate
 │   └── src/panels/           # chat, initiative, maps, monsters, notes, npcs, sessions, search
 └── Makefile                  # build/run/watch targets for both frontend and backend
 ```
+
+

@@ -1,5 +1,6 @@
 import { api } from '../api.js'
 import { h, onSubmitAsync } from '../dom.js'
+import { marked } from 'marked'
 
 function loadMonaco(): Promise<any> {
   return new Promise((resolve) => {
@@ -20,7 +21,7 @@ export async function notesPanel(): Promise<Node> {
 
   const select = h(
     'select',
-    { className: 'form-select bg-dark text-light border-secondary' },
+    { className: 'form-select bg-dark text-light border-secondary', style: 'width: auto;' },
     [
       h('option', { value: '' }, ['Select a note...']),
       ...names.map((n) => h('option', { value: n }, [n])),
@@ -31,14 +32,24 @@ export async function notesPanel(): Promise<Node> {
     type: 'text',
     className: 'form-control bg-dark text-light border-secondary',
     placeholder: 'new-note.md',
+    style: 'width: 160px;',
   }) as HTMLInputElement
   const newBtn = h('button', { type: 'submit', className: 'btn btn-outline-warning' }, ['Create'])
-  const newStatus = h('span', { className: 'ms-2' }, [])
-  const newForm = h('form', { className: 'd-flex gap-2 align-items-center' }, [newNameInput, newBtn, newStatus]) as HTMLFormElement
+  const newStatus = h('span', {}, [])
+  const previewBtn = h('button', {
+    type: 'button',
+    className: 'btn btn-outline-warning',
+  }, ['Preview']) as HTMLButtonElement
+  const newForm = h('form', { className: 'd-flex gap-2 align-items-center' }, [newNameInput, newBtn, previewBtn, newStatus]) as HTMLFormElement
 
   const editorDiv = h('div', {
     className: 'border border-secondary rounded',
     style: 'height:500px;',
+  }, []) as HTMLElement
+
+  const previewDiv = h('div', {
+    className: 'border border-secondary rounded p-3 overflow-auto markdown-preview',
+    style: 'height:500px; display:none;',
   }, []) as HTMLElement
 
   const editor = monaco.editor.create(editorDiv, {
@@ -52,6 +63,7 @@ export async function notesPanel(): Promise<Node> {
 
   let isDirty = false
   let currentNoteName = ''
+  let isPreviewing = false
 
   editor.onDidChangeModelContent(() => { isDirty = true })
 
@@ -65,6 +77,7 @@ export async function notesPanel(): Promise<Node> {
     await saveIfDirty()
     currentNoteName = name
     isDirty = false
+    if (isPreviewing) togglePreview()
     if (!name) {
       editor.setValue('')
       editor.updateOptions({ readOnly: true })
@@ -75,13 +88,29 @@ export async function notesPanel(): Promise<Node> {
     editor.updateOptions({ readOnly: false })
   }
 
+  function togglePreview() {
+    isPreviewing = !isPreviewing
+    if (isPreviewing) {
+      previewDiv.innerHTML = marked(editor.getValue()) as string
+      editorDiv.style.display = 'none'
+      previewDiv.style.display = ''
+      previewBtn.textContent = 'Edit'
+    } else {
+      editorDiv.style.display = ''
+      previewDiv.style.display = 'none'
+      previewBtn.textContent = 'Preview'
+    }
+  }
+
+  previewBtn.addEventListener('click', togglePreview)
+
   select.addEventListener('change', () => loadNote(select.value))
 
   onSubmitAsync(newForm, newBtn, newStatus, 'Creating...', async () => {
     let name = newNameInput.value.trim()
-    if (!name) throw new Error('Name required')
+    if (!name) { alert('Name required'); return }
     if (!name.endsWith('.md')) name += '.md'
-    if (!/^[A-Za-z0-9_-]+\.md$/.test(name)) throw new Error('Use letters, numbers, _ or - only')
+    if (!/^[A-Za-z0-9_-]+\.md$/.test(name)) { alert('Use letters, numbers, _ or - only'); return }
     await api.saveNote(name, '')
     select.append(h('option', { value: name }, [name]))
     select.value = name
@@ -97,8 +126,9 @@ export async function notesPanel(): Promise<Node> {
   window.addEventListener('beforeunload', beforeUnloadHandler)
 
   const root = h('div', {}, [
-    h('div', { className: 'd-flex gap-3 align-items-center mb-3' }, [select, newForm]),
+    h('div', { className: 'd-flex gap-2 align-items-center mb-3' }, [select, newForm]),
     editorDiv,
+    previewDiv,
   ]) as any
   root.__saveIfDirty = saveIfDirty
   return root as Node

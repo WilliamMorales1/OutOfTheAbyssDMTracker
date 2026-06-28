@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -417,38 +418,24 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 
 var validNoteName = regexp.MustCompile(`^[A-Za-z0-9_-]+\.md$`)
 
-const notesSeedFile = "migrations/002_seed_data.up.sql"
-const notesSeedMarker = "-- Notes\n"
+const notesDir = "notes"
 
-func sqlQuote(s string) string {
-	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
-}
-
-// regenerateNotesSeed rewrites the Notes block in the seed migration so a
-// reseed restores the latest saved note content.
-func regenerateNotesSeed(ctx context.Context) error {
-	notes, err := q.ListNotes(ctx)
+func syncNotesFromDisk(ctx context.Context) error {
+	files, err := filepath.Glob(filepath.Join(notesDir, "*.md"))
 	if err != nil {
 		return err
 	}
-
-	existing, err := os.ReadFile(notesSeedFile)
-	if err != nil {
-		return err
+	for _, f := range files {
+		content, err := os.ReadFile(f)
+		if err != nil {
+			return err
+		}
+		name := filepath.Base(f)
+		if err := q.UpsertNote(ctx, db.UpsertNoteParams{Name: name, Content: string(content)}); err != nil {
+			return err
+		}
 	}
-	idx := strings.Index(string(existing), notesSeedMarker)
-	if idx == -1 {
-		return fmt.Errorf("%s: missing %q marker", notesSeedFile, notesSeedMarker)
-	}
-
-	var b strings.Builder
-	b.Write(existing[:idx])
-	b.WriteString(notesSeedMarker)
-	for _, n := range notes {
-		fmt.Fprintf(&b, "INSERT INTO Notes (name, content) VALUES (%s, %s);\n", sqlQuote(n.Name), sqlQuote(n.Content))
-	}
-
-	return os.WriteFile(notesSeedFile, []byte(b.String()), 0644)
+	return nil
 }
 
 func handleAPINotesList(w http.ResponseWriter, r *http.Request) {
@@ -489,7 +476,7 @@ func handleAPINote(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		if err := regenerateNotesSeed(r.Context()); err != nil {
+		if err := os.WriteFile(filepath.Join(notesDir, name), body, 0644); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
