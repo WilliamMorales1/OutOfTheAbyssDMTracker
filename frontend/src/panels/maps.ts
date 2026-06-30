@@ -10,17 +10,16 @@ export async function mapsPanel(): Promise<Node> {
   const container = h('div', {}, [])
 
   const coordDisplay = h('div', {
-    style:
-      'position:fixed;display:none;color:#f0d080;font-family:monospace;font-size:0.85rem;background:rgba(13,14,22,0.85);padding:2px 7px;border-radius:4px;pointer-events:none;z-index:200;',
+    className: 'fixed hidden text-gold font-mono text-sm bg-surface/85 px-[7px] py-[2px] rounded pointer-events-none z-[200]',
   })
 
   const toggleBtn = h(
     'button',
     {
-      className: 'btn btn-sm btn-outline-warning',
+      className: 'btn btn-outline-warning',
       onclick: () => {
         coordTracking = !coordTracking
-        if (!coordTracking) coordDisplay.style.display = 'none'
+        if (!coordTracking) coordDisplay.classList.add('hidden')
       },
     },
     ['Toggle Coordinate Tooltip']
@@ -28,7 +27,7 @@ export async function mapsPanel(): Promise<Node> {
 
   const select = h(
     'select',
-    { className: 'form-select form-select-sm bg-dark text-light border-secondary', style: 'max-width:300px;width:auto;' },
+    { className: 'form-select form-select-sm max-w-[300px] w-auto' },
     [
       h('option', { value: '' }, ['Select a map...']),
       ...maps.map((gm) => h('option', { value: gm.id }, [gm.id])),
@@ -36,7 +35,7 @@ export async function mapsPanel(): Promise<Node> {
   ) as HTMLSelectElement
 
   container.append(
-    h('div', { className: 'd-flex gap-3 align-items-center mb-3' }, [select, toggleBtn]),
+    h('div', { className: 'flex gap-3 items-center mb-3' }, [select, toggleBtn]),
     coordDisplay
   )
 
@@ -45,7 +44,7 @@ export async function mapsPanel(): Promise<Node> {
 
   function showMap(id: string) {
     mapDivs.forEach((div) => {
-      div.style.display = div.dataset.mapId === id ? '' : 'none'
+      div.classList.toggle('hidden', div.dataset.mapId !== id)
     })
     if (id) requestAnimationFrame(updateScales)
   }
@@ -53,11 +52,7 @@ export async function mapsPanel(): Promise<Node> {
   select.addEventListener('change', () => showMap(select.value))
 
   for (const gm of maps) {
-    const card = h('div', {
-      className: 'dc',
-      style:
-        'position:fixed;display:none;background:#0d0e16;border:1px solid #352c10;padding:12px;width:max-content;max-width:min(320px,85vw);box-sizing:border-box;white-space:normal;word-wrap:break-word;pointer-events:none;z-index:100;border-radius:8px;box-shadow:0 4px 15px rgba(0,0,0,0.5);',
-    })
+    const card = h('div', { className: 'dc hidden' })
 
     const svgEl = svg('svg', {
       class: 'smap',
@@ -70,11 +65,11 @@ export async function mapsPanel(): Promise<Node> {
     svgEl.append(image)
 
     function showCard(m: Marker) {
-      const titleEl = h('div', { style: "font-family:'Trajan Pro', serif;font-size:1.25rem;color:#f0d080;margin-bottom:10px;" }, [m.title])
-      const bodyEl = h('div', { style: 'line-height:1.5;color:#d6d6d6;' }, [m.body])
+      const titleEl = h('div', { className: 'dt' }, [m.title])
+      const bodyEl = h('div', { className: 'db' }, [m.body])
       card.innerHTML = ''
       card.append(titleEl, bodyEl)
-      card.style.display = 'block'
+      card.classList.remove('hidden')
     }
 
     for (const m of gm.markers) {
@@ -88,13 +83,13 @@ export async function mapsPanel(): Promise<Node> {
         fill: '#c89030',
       }, [String(m.i)])
 
-      const g = svg('g', { class: 'loc', tabindex: 0, 'data-mx': m.x, 'data-my': m.y, style: 'cursor:pointer;outline:none;' }, [
+      const g = svg('g', { class: 'loc', tabindex: 0, 'data-mx': m.x, 'data-my': m.y, style: 'cursor:pointer;outline:none' }, [
         circle,
         text,
       ])
       g.addEventListener('mouseenter', () => showCard(m))
       g.addEventListener('mouseleave', () => {
-        card.style.display = 'none'
+        card.classList.add('hidden')
       })
       svgEl.append(g)
     }
@@ -102,8 +97,7 @@ export async function mapsPanel(): Promise<Node> {
     svgEls.push(svgEl)
 
     const mapDiv = h('div', {
-      className: 'sm',
-      style: 'position:relative;background:#080910;width:100%;margin-bottom:16px;display:none;',
+      className: 'sm relative bg-void w-full mb-4 hidden',
     }, [
       svgEl as unknown as Node,
       card,
@@ -113,7 +107,7 @@ export async function mapsPanel(): Promise<Node> {
 
     mapDiv.addEventListener('mousemove', (e) => {
       const me = e as MouseEvent
-      if (card.style.display !== 'block') return
+      if (card.classList.contains('hidden')) return
       const pad = 16
       let x = me.clientX + pad
       let y = me.clientY + pad
@@ -134,14 +128,14 @@ export async function mapsPanel(): Promise<Node> {
 
   container.addEventListener('mousemove', (e) => {
     if (!coordTracking) {
-      coordDisplay.style.display = 'none'
+      coordDisplay.classList.add('hidden')
       return
     }
     const me = e as MouseEvent
     const target = me.target as Element
     const svgTarget = target.closest('svg.smap') as SVGSVGElement | null
     if (!svgTarget) {
-      coordDisplay.style.display = 'none'
+      coordDisplay.classList.add('hidden')
       return
     }
     const pt = svgTarget.createSVGPoint()
@@ -151,7 +145,7 @@ export async function mapsPanel(): Promise<Node> {
     if (!ctm) return
     const cursor = pt.matrixTransform(ctm.inverse())
     coordDisplay.textContent = `${Math.round(cursor.x)}, ${Math.round(cursor.y)}`
-    coordDisplay.style.display = 'block'
+    coordDisplay.classList.remove('hidden')
 
     const pad = 14
     let x = me.clientX + pad

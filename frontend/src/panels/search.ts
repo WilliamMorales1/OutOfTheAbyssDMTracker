@@ -6,9 +6,6 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-// Splits text into nodes, wrapping case-insensitive matches of any query
-// term in a <mark> element. Builds DOM nodes directly (no innerHTML) so
-// result content can never be interpreted as markup.
 function highlight(text: string, query: string): (Node | string)[] {
   const terms = query
     .split(/\s+/)
@@ -20,17 +17,17 @@ function highlight(text: string, query: string): (Node | string)[] {
   const pattern = `(${terms.join('|')})`
   const parts = text.split(new RegExp(pattern, 'gi'))
   const isMatch = new RegExp(`^${pattern}$`, 'i')
-  return parts.map((part) => (isMatch.test(part) ? h('mark', { className: 'bg-warning text-dark' }, [part]) : part))
+  return parts.map((part) => (isMatch.test(part) ? h('mark', {}, [part]) : part))
 }
 
 export function searchPanel(): Node {
   const status = h('div', {}, [])
-  const results = h('div', { className: 'mt-3' }, [h('p', { className: 'text-secondary' }, ['Enter a query above.'])])
+  const results = h('div', { className: 'mt-3' }, [h('p', { className: 'text-gray-400' }, ['Enter a query above.'])])
 
   const input = h('input', {
     name: 'q',
     type: 'text',
-    className: 'form-control bg-dark text-light border-secondary',
+    className: 'form-control',
     placeholder: "Search lore semantically... (e.g. 'drow priestess tactics')",
     required: true,
   }) as HTMLInputElement
@@ -48,20 +45,16 @@ export function searchPanel(): Node {
     const res = (await api.search(q)) as SearchResult[]
     results.innerHTML = ''
     if (res.length === 0) {
-      results.append(h('p', { className: 'text-secondary' }, ['No results found.']))
+      results.append(h('p', { className: 'text-gray-400' }, ['No results found.']))
     } else {
       for (const r of res) {
         results.append(
-          h('div', { className: 'card bg-dark border-secondary mb-3' }, [
-            h('div', { className: 'card-header d-flex justify-content-between align-items-center' }, [
-              h('strong', { className: 'text-warning' }, [r.chapterTitle]),
-              h('span', { className: 'badge bg-secondary' }, [`${(r.score * 100).toFixed(0)}% match`]),
+          h('div', { className: 'card mb-3' }, [
+            h('div', { className: 'card-header' }, [
+              h('strong', { className: 'text-yellow-400' }, [r.chapterTitle]),
+              h('span', { className: 'badge bg-gray-600 text-white' }, [`${(r.score * 100).toFixed(0)}% match`]),
             ]),
-            h(
-              'div',
-              { className: 'card-body text-light', style: 'white-space:pre-wrap;font-size:.875rem' },
-              highlight(r.content, q)
-            ),
+            h('div', { className: 'card-body whitespace-pre-wrap text-sm' }, highlight(r.content, q)),
           ])
         )
       }

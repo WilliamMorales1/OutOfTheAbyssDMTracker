@@ -7,6 +7,7 @@ import { chatPanel } from './panels/chat.js'
 import { searchPanel } from './panels/search.js'
 import { notesPanel } from './panels/notes.js'
 import { initiativePanel } from './panels/initiative.js'
+import { refsPanel } from './panels/references.js'
 
 const tabs = [
   { name: 'Sessions', path: 'sessions', load: sessionsPanel },
@@ -14,6 +15,7 @@ const tabs = [
   { name: 'NPCs', path: 'npcs', load: npcsPanel },
   { name: 'Monsters', path: 'monsters', load: monstersPanel },
   { name: 'Maps', path: 'maps', load: mapsPanel },
+  { name: 'References', path: 'refs', load: refsPanel },
   { name: 'Initiative', path: 'initiative', load: async () => initiativePanel() },
   { name: 'Ask Agent', path: 'chat', load: async () => chatPanel() },
   { name: 'Lore Search', path: 'search', load: async () => searchPanel() },
@@ -21,14 +23,14 @@ const tabs = [
 
 const root = document.getElementById('root')!
 
-const header = h('header', { className: 'bg-black py-3 mb-4 border-bottom border-secondary' }, [
+const header = h('header', { className: 'bg-black py-3 mb-4 border-b border-gray-600' }, [
   h('div', { className: 'container' }, [
-    h('h1', { className: 'display-5 fw-bold text-warning mb-0' }, ['Out of the Abyss']),
+    h('h1', { className: 'text-5xl font-bold text-yellow-400 mb-0' }, ['Out of the Abyss']),
   ]),
 ])
 
-const navList = h('ul', { className: 'nav nav-tabs border-secondary mb-3' }, [])
-const panel = h('div', { className: 'bg-secondary bg-opacity-10 rounded p-3' }, [])
+const navList = h('ul', { className: 'nav-tabs mb-3' }, [])
+const panel = h('div', { className: 'bg-gray-600/10 rounded p-3' }, [])
 
 const panelCache = new Map<string, Node>()
 
@@ -38,7 +40,7 @@ async function activate(path: (typeof tabs)[number]['path']) {
 
   navList.querySelectorAll('button').forEach((btn) => {
     const isActive = btn.dataset.path === path
-    btn.className = `nav-link bg-transparent ${isActive ? 'active text-warning border-warning' : 'text-light'}`
+    btn.className = `nav-link ${isActive ? 'active' : 'text-gray-100'}`
   })
 
   const cached = panelCache.get(path)
@@ -54,13 +56,13 @@ async function activate(path: (typeof tabs)[number]['path']) {
     panelCache.set(path, node)
     mount(panel, node)
   } catch (err) {
-    mount(panel, h('p', { className: 'text-danger' }, [String(err)]))
+    mount(panel, h('p', { className: 'text-red-500' }, [String(err)]))
   }
 }
 
 for (const t of tabs) {
   const btn = h('button', { 'data-path': t.path, onclick: () => activate(t.path) }, [t.name])
-  navList.append(h('li', { className: 'nav-item' }, [btn]))
+  navList.append(h('li', {}, [btn]))
 }
 
 const container = h('div', { className: 'container' }, [navList, panel])

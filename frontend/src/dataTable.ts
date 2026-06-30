@@ -8,7 +8,7 @@ export interface Column<T> {
 
 export function dataTable<T>(columns: Column<T>[], rows: T[], emptyMessage: string): Node {
   if (rows.length === 0) {
-    return h('p', { className: 'empty p-3' }, [emptyMessage])
+    return h('p', { className: 'p-3 text-gray-400' }, [emptyMessage])
   }
 
   let filter = ''
@@ -17,7 +17,7 @@ export function dataTable<T>(columns: Column<T>[], rows: T[], emptyMessage: stri
 
   const tbody = h('tbody', {}, [])
   const theadRow = h('tr', {}, [])
-  const wrapper = h('div', { className: 'table-responsive' }, [])
+  const wrapper = h('div', { className: 'overflow-x-auto' }, [])
 
   function getRows(): T[] {
     let result = rows
@@ -47,7 +47,7 @@ export function dataTable<T>(columns: Column<T>[], rows: T[], emptyMessage: stri
       const th = h(
         'th',
         {
-          style: c.sortValue ? 'cursor:pointer;white-space:nowrap' : 'white-space:nowrap',
+          className: c.sortValue ? 'cursor-pointer whitespace-nowrap' : 'whitespace-nowrap',
           onclick: c.sortValue
             ? () => {
                 if (sortCol === i) {
@@ -107,7 +107,7 @@ export function dataTable<T>(columns: Column<T>[], rows: T[], emptyMessage: stri
 
   const filterInput = h('input', {
     type: 'text',
-    className: 'form-control bg-dark text-light border-secondary mb-2',
+    className: 'form-control mb-2',
     placeholder: 'Filter columns...',
     oninput: (e: Event) => {
       filter = (e.target as HTMLInputElement).value
@@ -118,7 +118,7 @@ export function dataTable<T>(columns: Column<T>[], rows: T[], emptyMessage: stri
   renderHead()
   renderBody()
 
-  const table = h('table', { className: 'table table-dark table-hover table-bordered w-100' }, [
+  const table = h('table', { className: 'table table-hover w-full' }, [
     h('thead', {}, [theadRow]),
     tbody,
   ])

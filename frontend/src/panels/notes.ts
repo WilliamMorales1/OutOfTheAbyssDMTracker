@@ -21,7 +21,7 @@ export async function notesPanel(): Promise<Node> {
 
   const select = h(
     'select',
-    { className: 'form-select bg-dark text-light border-secondary', style: 'width: auto;' },
+    { className: 'form-select w-auto' },
     [
       h('option', { value: '' }, ['Select a note...']),
       ...names.map((n) => h('option', { value: n }, [n])),
@@ -30,9 +30,8 @@ export async function notesPanel(): Promise<Node> {
 
   const newNameInput = h('input', {
     type: 'text',
-    className: 'form-control bg-dark text-light border-secondary',
+    className: 'form-control w-[160px]',
     placeholder: 'new-note.md',
-    style: 'width: 160px;',
   }) as HTMLInputElement
   const newBtn = h('button', { type: 'submit', className: 'btn btn-outline-warning' }, ['Create'])
   const newStatus = h('span', {}, [])
@@ -40,16 +39,14 @@ export async function notesPanel(): Promise<Node> {
     type: 'button',
     className: 'btn btn-outline-warning',
   }, ['Preview']) as HTMLButtonElement
-  const newForm = h('form', { className: 'd-flex gap-2 align-items-center' }, [newNameInput, newBtn, previewBtn, newStatus]) as HTMLFormElement
+  const newForm = h('form', { className: 'flex gap-2 items-center' }, [newNameInput, newBtn, previewBtn, newStatus]) as HTMLFormElement
 
   const editorDiv = h('div', {
-    className: 'border border-secondary rounded',
-    style: 'height:500px;',
+    className: 'border border-gray-600 rounded h-[500px]',
   }, []) as HTMLElement
 
   const previewDiv = h('div', {
-    className: 'border border-secondary rounded p-3 overflow-auto markdown-preview',
-    style: 'height:500px; display:none;',
+    className: 'border border-gray-600 rounded p-3 overflow-auto markdown-preview h-[500px] hidden',
   }, []) as HTMLElement
 
   const editor = monaco.editor.create(editorDiv, {
@@ -92,18 +89,17 @@ export async function notesPanel(): Promise<Node> {
     isPreviewing = !isPreviewing
     if (isPreviewing) {
       previewDiv.innerHTML = marked(editor.getValue()) as string
-      editorDiv.style.display = 'none'
-      previewDiv.style.display = ''
+      editorDiv.classList.add('hidden')
+      previewDiv.classList.remove('hidden')
       previewBtn.textContent = 'Edit'
     } else {
-      editorDiv.style.display = ''
-      previewDiv.style.display = 'none'
+      editorDiv.classList.remove('hidden')
+      previewDiv.classList.add('hidden')
       previewBtn.textContent = 'Preview'
     }
   }
 
   previewBtn.addEventListener('click', togglePreview)
-
   select.addEventListener('change', () => loadNote(select.value))
 
   onSubmitAsync(newForm, newBtn, newStatus, 'Creating...', async () => {
@@ -126,7 +122,7 @@ export async function notesPanel(): Promise<Node> {
   window.addEventListener('beforeunload', beforeUnloadHandler)
 
   const root = h('div', {}, [
-    h('div', { className: 'd-flex gap-2 align-items-center mb-3' }, [select, newForm]),
+    h('div', { className: 'flex gap-2 items-center mb-3' }, [select, newForm]),
     editorDiv,
     previewDiv,
   ]) as any

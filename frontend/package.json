@@ -4,11 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc && node -e \"require('fs').cpSync('index.html','dist/index.html');require('fs').cpSync('src/index.css','dist/index.css')\"",
-    "watch": "tsc --watch"
+    "build": "tsc && npx @tailwindcss/cli -i src/input.css -o dist/index.css --minify && node -e \"require('fs').cpSync('index.html','dist/index.html')\"",
+    "watch:ts": "tsc --watch",
+    "watch:css": "npx @tailwindcss/cli -i src/input.css -o dist/index.css --watch"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.2",
     "@types/marked": "^5.0.2",
+    "tailwindcss": "^4.3.2",
     "typescript": "~6.0.2"
   },
   "dependencies": {

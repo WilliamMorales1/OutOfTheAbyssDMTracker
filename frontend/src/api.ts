@@ -13,6 +13,7 @@ export const api = {
   monster: (id: number) => getJSON<MonsterDetail>(`/api/monsters/${id}`),
   monsterStats: () => getJSON<MonsterStat[]>('/api/monster-stats'),
   maps: () => getJSON('/api/maps'),
+  refs: () => getJSON('/api/refs'),
   search: (q: string) => getJSON(`/api/search?q=${encodeURIComponent(q)}`),
   chat: (q: string) => getJSON(`/api/chat?q=${encodeURIComponent(q)}`),
   notes: () => getJSON<string[]>('/api/notes'),

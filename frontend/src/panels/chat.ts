@@ -23,7 +23,7 @@ export function chatPanel(): Node {
   const input = h('input', {
     name: 'q',
     type: 'text',
-    className: 'form-control bg-dark text-light border-secondary',
+    className: 'form-control',
     placeholder: 'Ask anything about the campaign...',
     required: true,
   }) as HTMLInputElement
@@ -41,11 +41,11 @@ export function chatPanel(): Node {
     const res = (await api.chat(q)) as ChatExchange
     history.append(
       h('div', {}, [
-        h('div', { className: 'chat-msg user d-flex justify-content-end' }, [
-          h('div', { className: 'chat-bubble w-1000' }, [res.question]),
+        h('div', { className: 'chat-msg user flex justify-end' }, [
+          h('div', { className: 'chat-bubble' }, [res.question]),
         ]),
-        h('div', { className: 'chat-msg agent d-flex justify-content-start' }, [
-          h('div', { className: 'chat-bubble w-1000' }, [renderAnswer(res.answer)]),
+        h('div', { className: 'chat-msg agent flex justify-start' }, [
+          h('div', { className: 'chat-bubble' }, [renderAnswer(res.answer)]),
         ]),
       ])
     )

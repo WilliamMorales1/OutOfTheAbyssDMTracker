@@ -46,7 +46,7 @@ export async function initiativePanel(): Promise<Node> {
 
     const order = sorted()
 
-    const roundDisplay = h('button', { type: 'button', className: 'btn btn-warning text-dark disabled fw-bold' }, [`Round ${round}`])
+    const roundDisplay = h('button', { type: 'button', className: 'btn btn-warning font-bold pointer-events-none', disabled: true }, [`Round ${round}`])
 
     const prevBtn = h('button', {
       type: 'button',
@@ -86,17 +86,16 @@ export async function initiativePanel(): Promise<Node> {
       },
     }, ['Reset Rounds'])
 
-    const controls = h('div', { className: 'd-flex align-items-stretch gap-2 mb-3' }, [roundDisplay, prevBtn, nextBtn, resetBtn])
+    const controls = h('div', { className: 'flex items-stretch gap-2 mb-3' }, [roundDisplay, prevBtn, nextBtn, resetBtn])
 
     const rows = order.map((c, idx) => {
       const isActive = idx === turn
 
-      const hpDisplay = h('span', { className: c.hp <= 0 ? 'text-danger fw-bold' : '' }, [`${c.hp} / ${c.maxHp}`])
+      const hpDisplay = h('span', { className: c.hp <= 0 ? 'text-red-500 font-bold' : '' }, [`${c.hp} / ${c.maxHp}`])
 
       const dmgInput = h('input', {
         type: 'number',
-        className: 'form-control bg-dark text-light border-secondary',
-        style: 'width:70px',
+        className: 'form-control w-[70px]',
         placeholder: 'Amount',
       }) as HTMLInputElement
 
@@ -135,19 +134,18 @@ export async function initiativePanel(): Promise<Node> {
         h('td', {}, [h('strong', {}, [c.name])]),
         h('td', {}, [String(c.ac)]),
         h('td', {}, [hpDisplay]),
-        h('td', {}, [h('div', { className: 'd-flex gap-2 align-items-center' }, [dmgInput, applyDmg, applyHeal])]),
+        h('td', {}, [h('div', { className: 'flex gap-2 items-center' }, [dmgInput, applyDmg, applyHeal])]),
         h('td', {}, [removeBtn]),
       ])
     })
 
     const suggestions = h('div', {
-      className: 'initiative-suggestions list-group shadow rounded-2 border border-secondary',
-      style: 'position:fixed;z-index:2000;max-height:240px;overflow-y:auto;display:none',
+      className: 'initiative-suggestions list-group shadow border border-gray-600 fixed z-[2000] max-h-[240px] overflow-y-auto hidden',
     }) as HTMLDivElement
     document.body.append(suggestions)
 
     function hideSuggestions() {
-      suggestions.style.display = 'none'
+      suggestions.classList.add('hidden')
       suggestions.innerHTML = ''
     }
 
@@ -185,24 +183,24 @@ export async function initiativePanel(): Promise<Node> {
         suggestions.append(
           h('button', {
             type: 'button',
-            className: 'list-group-item list-group-item-action bg-dark text-light border-secondary d-flex justify-content-between align-items-center gap-2',
+            className: 'list-group-item list-group-item-action flex justify-between items-center gap-2',
             onmousedown: (e: Event) => {
               e.preventDefault()
               selectMonster(m)
             },
           }, [
             h('span', {}, [m.name]),
-            h('span', { className: 'text-secondary small text-nowrap' }, [`AC ${m.ac} · HP ${m.hp}`]),
+            h('span', { className: 'text-gray-400 text-sm whitespace-nowrap' }, [`AC ${m.ac} · HP ${m.hp}`]),
           ])
         )
       }
       positionSuggestions()
-      suggestions.style.display = 'block'
+      suggestions.classList.remove('hidden')
     }
 
     const nameInput = h('input', {
       type: 'text',
-      className: 'form-control bg-dark text-light border-secondary',
+      className: 'form-control',
       placeholder: 'e.g. Goblin',
       autocomplete: 'off',
       oninput: (e: Event) => {
@@ -212,13 +210,13 @@ export async function initiativePanel(): Promise<Node> {
       },
       onblur: () => hideSuggestions(),
     }) as HTMLInputElement
-    const initInput = h('input', { type: 'number', className: 'form-control bg-dark text-light border-secondary', style: 'width:90px', placeholder: '0' }) as HTMLInputElement
-    const acInput = h('input', { type: 'number', className: 'form-control bg-dark text-light border-secondary', style: 'width:90px', placeholder: '0' }) as HTMLInputElement
-    const hpInput = h('input', { type: 'number', className: 'form-control bg-dark text-light border-secondary', style: 'width:90px', placeholder: '0' }) as HTMLInputElement
+    const initInput = h('input', { type: 'number', className: 'form-control w-[90px]', placeholder: '0' }) as HTMLInputElement
+    const acInput = h('input', { type: 'number', className: 'form-control w-[90px]', placeholder: '0' }) as HTMLInputElement
+    const hpInput = h('input', { type: 'number', className: 'form-control w-[90px]', placeholder: '0' }) as HTMLInputElement
 
     const rollInitBtn = h('button', {
       type: 'button',
-      className: 'btn btn-outline-warning d-flex align-items-center justify-content-center px-2',
+      className: 'btn btn-outline-warning flex items-center justify-center px-2',
       title: selectedMonster ? `1d20 + ${dexMod(selectedMonster.dex)} (DEX)` : '1d20 (select a monster for its DEX mod)',
       onclick: () => {
         const mod = selectedMonster ? dexMod(selectedMonster.dex) : 0
@@ -227,7 +225,10 @@ export async function initiativePanel(): Promise<Node> {
     }, [
       h('span', {
         className: 'd20-icon',
-        style: '-webkit-mask-image:url(/images/d20.png);mask-image:url(/images/d20.png)',
+        style: {
+          webkitMaskImage: 'url(/images/d20.png)',
+          maskImage: 'url(/images/d20.png)',
+        },
       }, []),
     ])
 
@@ -250,7 +251,7 @@ export async function initiativePanel(): Promise<Node> {
     const addBtn = h('button', { type: 'button', className: 'btn btn-warning', onclick: addCombatant }, ['Add to Tracker'])
 
     const addRow = h('tr', {}, [
-      h('td', {}, [h('div', { className: 'd-flex gap-2 align-items-stretch' }, [initInput, rollInitBtn])]),
+      h('td', {}, [h('div', { className: 'flex gap-2 items-stretch' }, [initInput, rollInitBtn])]),
       h('td', {}, [nameInput]),
       h('td', {}, [acInput]),
       h('td', {}, [hpInput]),
@@ -258,8 +259,8 @@ export async function initiativePanel(): Promise<Node> {
       h('td', {}, []),
     ])
 
-    const table = h('div', { className: 'table-responsive' }, [
-      h('table', { className: 'table table-dark table-hover table-bordered w-100' }, [
+    const table = h('div', { className: 'overflow-x-auto' }, [
+      h('table', { className: 'table table-hover w-full' }, [
         h('thead', {}, [
           h('tr', {}, [
             h('th', {}, ['Initiative']),

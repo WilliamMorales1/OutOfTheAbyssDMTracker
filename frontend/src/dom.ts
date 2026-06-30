@@ -1,4 +1,5 @@
-type Attrs = Record<string, string | number | boolean | ((e: Event) => void) | undefined>
+type Attrs = Record<string, string | number | boolean | ((e: Event) => void) | Partial<CSSStyleDeclaration> | undefined>
+
 
 export function h<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -12,6 +13,8 @@ export function h<K extends keyof HTMLElementTagNameMap>(
       el.addEventListener(k.slice(2).toLowerCase(), v as (e: Event) => void)
     } else if (k === 'className') {
       el.setAttribute('class', String(v))
+    } else if (k === 'style' && typeof v === 'object') {
+      Object.assign(el.style, v)
     } else if (typeof v === 'boolean') {
       if (v) el.setAttribute(k, '')
     } else {
