@@ -61,7 +61,8 @@ export async function mapsPanel(): Promise<Node> {
     }) as unknown as SVGSVGElement
     svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 
-    const image = svg('image', { href: gm.img, width: gm.w, height: gm.h })
+    const [, , imgW, imgH] = gm.vb.split(' ')
+    const image = svg('image', { href: gm.img, width: imgW, height: imgH })
     svgEl.append(image)
 
     function showCard(m: Marker) {

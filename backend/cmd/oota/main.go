@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"image"
+	_ "image/png"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +17,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "golang.org/x/image/webp"
 	_ "modernc.org/sqlite"
 )
 
@@ -33,21 +37,24 @@ type GameMap struct {
 	ID      string   `json:"id"`
 	Img     string   `json:"img"`
 	VB      string   `json:"vb"`
-	W       string   `json:"w"`
-	H       string   `json:"h"`
 	Markers []Marker `json:"markers"`
 }
 
-func vbDims(vb string) (w, h string) {
-	parts := strings.Fields(vb)
-	if len(parts) == 4 {
-		return parts[2], parts[3]
+func imgVB(imgPath string) string {
+	f, err := os.Open(imgPath)
+	if err != nil {
+		return ""
 	}
-	return "100%", "100%"
+	defer f.Close()
+	cfg, _, err := image.DecodeConfig(f)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("0 0 %d %d", cfg.Width, cfg.Height)
 }
 
 func loadGameMaps(ctx context.Context) error {
-	rows, err := conn.QueryContext(ctx, `SELECT id, img, vb FROM GameMaps ORDER BY id`)
+	rows, err := conn.QueryContext(ctx, `SELECT id, img FROM GameMaps ORDER BY id`)
 	if err != nil {
 		return err
 	}
@@ -55,9 +62,10 @@ func loadGameMaps(ctx context.Context) error {
 	maps := []GameMap{}
 	for rows.Next() {
 		gm := GameMap{Markers: []Marker{}}
-		if err := rows.Scan(&gm.ID, &gm.Img, &gm.VB); err != nil {
+		if err := rows.Scan(&gm.ID, &gm.Img); err != nil {
 			return err
 		}
+		gm.VB = imgVB(strings.TrimPrefix(gm.Img, "./"))
 		maps = append(maps, gm)
 	}
 	for i, gm := range maps {
@@ -74,9 +82,6 @@ func loadGameMaps(ctx context.Context) error {
 			maps[i].Markers = append(maps[i].Markers, m)
 		}
 		mrows.Close()
-	}
-	for i, gm := range maps {
-		maps[i].W, maps[i].H = vbDims(gm.VB)
 	}
 	gameMaps = maps
 	return nil

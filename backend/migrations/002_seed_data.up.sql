@@ -173,12 +173,12 @@ UPDATE Sessions SET checkpoint = CASE session_num
 END;
 
 -- Maps
-INSERT INTO GameMaps (id, img, vb) VALUES
-    ('underdark',        './images/underdark.webp',        '0 0 2404 3000'),
-    ('sloobludop',       './images/sloobludop.webp',       '0 0 680 554'),
-    ('gracklstugh',      './images/gracklstugh.webp',      '0 0 4050 3300'),
-    ('whorlstoneTunnels','./images/whorlstoneTunnels.webp','0 0 3300 4750'),
-    ('neverlightGrove', './images/neverlightGrove.webp', '0 0 4050 3300');
+INSERT INTO GameMaps (id, img) VALUES
+    ('underdark',        './images/underdark.webp'),
+    ('sloobludop',       './images/sloobludop.webp'),
+    ('gracklstugh',      './images/gracklstugh.webp'),
+    ('whorlstoneTunnels','./images/whorlstoneTunnels.webp'),
+    ('neverlightGrove', './images/neverlightGrove.webp');
 
 INSERT INTO MapMarkers (map_id, i, x, y, title, body) VALUES
 -- sloobludop

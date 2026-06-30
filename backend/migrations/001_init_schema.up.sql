@@ -57,8 +57,7 @@ CREATE TABLE Notes (
 
 CREATE TABLE GameMaps (
     id  TEXT PRIMARY KEY,
-    img TEXT NOT NULL,
-    vb  TEXT NOT NULL
+    img TEXT NOT NULL
 );
 
 CREATE TABLE MapMarkers (

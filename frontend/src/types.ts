@@ -91,8 +91,6 @@ export interface GameMap {
   id: string
   img: string
   vb: string
-  w: string
-  h: string
   markers: Marker[]
 }
 
@@ -100,8 +98,6 @@ export interface Reference {
   id: string
   img: string
   vb: string
-  w: string
-  h: string
 }
 
 export interface SearchResult {
