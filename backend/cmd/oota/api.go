@@ -263,6 +263,32 @@ func handleAPIMaps(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, gameMaps)
 }
 
+func handleAPIRefs(w http.ResponseWriter, r *http.Request) {
+	rows, err := conn.QueryContext(r.Context(), `SELECT id, title, content FROM Refs ORDER BY id`)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+	type refDTO struct {
+		ID      string          `json:"id"`
+		Title   string          `json:"title"`
+		Content json.RawMessage `json:"content"`
+	}
+	out := []refDTO{}
+	for rows.Next() {
+		var ref refDTO
+		var content string
+		if err := rows.Scan(&ref.ID, &ref.Title, &content); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		ref.Content = json.RawMessage(content)
+		out = append(out, ref)
+	}
+	writeJSON(w, out)
+}
+
 func handleAPIChat(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	if q == "" {

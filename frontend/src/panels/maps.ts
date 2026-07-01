@@ -27,7 +27,7 @@ export async function mapsPanel(): Promise<Node> {
 
   const select = h(
     'select',
-    { className: 'form-select form-select-sm max-w-[300px] w-auto' },
+    { className: 'form-select w-auto' },
     [
       h('option', { value: '' }, ['Select a map...']),
       ...maps.map((gm) => h('option', { value: gm.id }, [gm.id])),

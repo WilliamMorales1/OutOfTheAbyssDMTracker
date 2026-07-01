@@ -144,6 +144,7 @@ func main() {
 	mux.HandleFunc("/api/monster-stats", handleAPIMonsterStats)
 	mux.HandleFunc("/api/sessions", handleAPISessions)
 	mux.HandleFunc("/api/maps", handleAPIMaps)
+	mux.HandleFunc("/api/refs", handleAPIRefs)
 	mux.HandleFunc("/api/chat", handleAPIChat)
 	mux.HandleFunc("/api/search", handleAPISearch)
 	mux.HandleFunc("/api/notes", handleAPINotesList)

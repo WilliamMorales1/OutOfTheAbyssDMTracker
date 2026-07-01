@@ -212,6 +212,23 @@ mark {
 }
 
 /* Markdown preview */
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  font-weight: bold;
+  color: #f0d080;
+  margin: 0.8em 0 0.4em;
+  line-height: 1.3;
+}
+.markdown-preview h1 { font-size: 2em; border-bottom: 1px solid #4a4a4a; }
+.markdown-preview h2 { font-size: 1.5em; border-bottom: 1px solid #4a4a4a; }
+.markdown-preview h3 { font-size: 1.25em; }
+.markdown-preview h4 { font-size: 1.1em; }
+.markdown-preview h5 { font-size: 1em; }
+.markdown-preview h6 { font-size: 0.9em; }
 .markdown-preview table {
   border-collapse: collapse;
   width: 100%;

@@ -7,6 +7,7 @@ import { chatPanel } from './panels/chat.js'
 import { searchPanel } from './panels/search.js'
 import { notesPanel } from './panels/notes.js'
 import { initiativePanel } from './panels/initiative.js'
+import { refsPanel } from './panels/references.js'
 
 const tabs = [
   { name: 'Sessions', path: 'sessions', load: sessionsPanel },
@@ -17,6 +18,7 @@ const tabs = [
   { name: 'Initiative', path: 'initiative', load: async () => initiativePanel() },
   { name: 'Ask Agent', path: 'chat', load: async () => chatPanel() },
   { name: 'Lore Search', path: 'search', load: async () => searchPanel() },
+  { name: 'References', path: 'references', load: async () => refsPanel() },
 ] as const
 
 const root = document.getElementById('root')!

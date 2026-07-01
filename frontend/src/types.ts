@@ -94,10 +94,19 @@ export interface GameMap {
   markers: Marker[]
 }
 
+export interface RefEntry {
+  name: string
+  tag?: string
+  description?: string
+  bullets?: string[]
+  table?: { headers: string[]; rows: string[][] }
+  descriptionAfter?: string
+}
+
 export interface Reference {
   id: string
-  img: string
-  vb: string
+  title: string
+  content: { entries: RefEntry[] }
 }
 
 export interface SearchResult {
