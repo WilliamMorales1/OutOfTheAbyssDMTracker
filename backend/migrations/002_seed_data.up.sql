@@ -178,19 +178,22 @@ INSERT INTO GameMaps (id, img) VALUES
     ('sloobludop',       './images/sloobludop.webp'),
     ('gracklstugh',      './images/gracklstugh.webp'),
     ('whorlstoneTunnels','./images/whorlstoneTunnels.webp'),
-    ('neverlightGrove', './images/neverlightGrove.webp');
+    ('neverlightGrove',  './images/neverlightGrove.webp'),
+    ('blingdenstone',    './images/blingdenstone.webp');
 
 INSERT INTO MapMarkers (map_id, i, x, y, title, body) VALUES
+-- blingdenstone
+-- add here
 -- sloobludop
-('sloobludop', 1, 663, 286, 'North Gate',
+('sloobludop', 1, 3939, 1702, 'North Gate',
  'Heavy netting reinforced with bone hooks encloses the village to the north, with a central gate for safe passage. Crawling through requires DC 15 Acrobatics — failure deals 1d8 piercing and restrains (DC 12 Str to break free). Four kuo-toa whips guard the gate. Unescorted captives: d20 1–7 to area 3, 8–18 to area 4, 19–20 guards brawl over the right to claim them.'),
-('sloobludop', 2, 23, 271, 'South Gate',
+('sloobludop', 2, 148, 1614, 'South Gate',
  'The southern boundary of Sloobludop mirrors the north — the same bone-hooked netting wall, the same central gate, and four kuo-toa whips standing watch. The same DC 15 Acrobatics check applies to any who attempt to crawl through. Unescorted captives face the same faction-split dice. A 19–20 result means guards of opposing cults come to immediate blows — potentially exploitable chaos for a cunning party.'),
-('sloobludop', 3, 471, 146, 'Docks',
+('sloobludop', 3, 864, 874, 'Docks',
  'Six kuo-toa keelboats moor at the water''s edge of the Darklake. Ferry service is available but no vessel departs without auguries — a half-hour bone-casting ritual. Results: 1–8 favorable, 9–18 unfavorable, 19–20 unclear (archpriest of the Deep Father must be consulted). Five patrols of kuo-toa monitors guard the platforms at all hours. Stealing a boat requires DC 16 Stealth — the kuo-toa can sense invisible creatures and will pursue any thieves to reclaim them as offerings.'),
-('sloobludop', 4, 391, 328, 'Shrine of the Sea Mother',
+('sloobludop', 4, 2324, 1957, 'Shrine of the Sea Mother',
  'A nine-foot idol: a wooden body capped with the severed head and claws of a giant albino crayfish. Four kuo-toa monitors guard it plus 2d4 worshippers. Glooglugogg — kuo-toa whip, loyal son of Ploopploopeen — tends the shrine, hostile to outsiders. Adjacent quarters hold: 500 cp, 2,000 sp, 150 gp, 27 pp, pearls (1,000 gp), 2 potions of healing, 1 potion of water breathing, scroll of light.'),
-('sloobludop', 5, 324, 240, 'Altar of the Deep Father',
+('sloobludop', 5, 1914, 1401, 'Altar of the Deep Father',
  'The idol: manta ray hide between two poles, a dead manta ray pinned at center, two dead octopuses draped on top. The stone altar beneath runs dark with blood. Klibdoloogut (kuo-toa whip) stands before it; six kuo-toa tend offerings. Non-kuo-toa here are seized for sacrifice. Archpriest Bloppblippodd — Ploopploopeen''s estranged daughter — lives in an adjacent hovel. Duergar smuggler Hemeth is bound against the far wall, willing to bargain.'),
 -- gracklstugh
 ('gracklstugh', 1, 1311, 740, 'The Shattered Spire',

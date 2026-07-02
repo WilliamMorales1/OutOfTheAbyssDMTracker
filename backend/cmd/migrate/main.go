@@ -21,5 +21,5 @@ func main() {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("migrations up: %v", err)
 	}
-	log.Println("reseed complete")
+	log.Println("migrations complete")
 }

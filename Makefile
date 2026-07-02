@@ -1,4 +1,4 @@
-.PHONY: build build-frontend build-backend run dev watch clean reseed
+.PHONY: build build-frontend build-backend run dev watch clean migrate reseed
 
 build: build-frontend build-backend
 
@@ -23,7 +23,9 @@ clean:
 	rm -rf backend/tmp
 	rm -rf frontend/dist
 
-reseed:
+migrate:
 	cd backend && go run ./cmd/migrate
+
+reseed: migrate
 	cd backend && go run ./cmd/ingest-5etools
 	cd backend && go run ./cmd/ingest-lore

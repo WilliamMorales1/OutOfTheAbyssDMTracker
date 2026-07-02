@@ -86,6 +86,10 @@ type bestiaryFile struct {
 	Monster []monsterJSON `json:"monster"`
 }
 
+type bestiaryFileRaw struct {
+	Monster []map[string]any `json:"monster"`
+}
+
 type fluffImage struct {
 	Type string `json:"type"`
 	Href struct {
@@ -529,16 +533,25 @@ func main() {
 	defer conn.Close()
 	q := db.New(conn)
 
-	var monsters []monsterJSON
 	fluff := map[string]monsterFluffJSON{}
+	rawIndex := map[string]map[string]any{}
+	var rawOrder []string
 
 	for _, src := range sources {
-		var bf bestiaryFile
+		var bf bestiaryFileRaw
 		log.Printf("fetching bestiary-%s.json", src)
 		if err := fetchJSON(dataBaseURL+"bestiary-"+src+".json", &bf); err != nil {
 			log.Fatalf("%v", err)
 		}
-		monsters = append(monsters, bf.Monster...)
+		for _, m := range bf.Monster {
+			name, _ := m["name"].(string)
+			source, _ := m["source"].(string)
+			key := name + "|" + source
+			if _, exists := rawIndex[key]; !exists {
+				rawOrder = append(rawOrder, key)
+			}
+			rawIndex[key] = m
+		}
 
 		var ff fluffFile
 		log.Printf("fetching fluff-bestiary-%s.json", src)
@@ -549,6 +562,28 @@ func main() {
 		for _, mf := range ff.MonsterFluff {
 			fluff[mf.Name+"|"+mf.Source] = mf
 		}
+	}
+
+	log.Printf("fetching template.json")
+	templates, err := loadTemplates()
+	if err != nil {
+		log.Printf("warning: failed to load monster templates, _copy monsters using them will be incomplete: %v", err)
+		templates = map[string]templateApply{}
+	}
+
+	res := newResolver(rawIndex, templates)
+	var monsters []monsterJSON
+	for _, key := range rawOrder {
+		merged := res.resolve(key)
+		b, err := json.Marshal(merged)
+		if err != nil {
+			log.Fatalf("marshal resolved monster %q: %v", key, err)
+		}
+		var mj monsterJSON
+		if err := json.Unmarshal(b, &mj); err != nil {
+			log.Fatalf("unmarshal resolved monster %q: %v", key, err)
+		}
+		monsters = append(monsters, mj)
 	}
 	log.Printf("parsed %d monsters from %d sources", len(monsters), len(sources))
 
