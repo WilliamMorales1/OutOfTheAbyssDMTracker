@@ -11,10 +11,16 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const ollamaURL = "http://localhost:11434/v1/chat/completions"
 const agentModel = "gemma4"
+
+// Ollama runs local inference and can take a while, especially cold-loading
+// a model; tool calls (web/API) should fail fast instead of hanging forever.
+var ollamaClient = &http.Client{Timeout: 60 * time.Second}
+var toolClient = &http.Client{Timeout: 15 * time.Second}
 
 const systemPrompt = `You are a D&D Dungeon Master assistant for "Out of the Abyss".
 Use the search and sql tools to answer questions about the campaign. Use lore_search for narrative/story lore from chapter text. Use web_search for general knowledge not in the database.
@@ -144,9 +150,9 @@ func ollama(ctx context.Context, messages []chatMsg) (*chatResp, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := ollamaClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Ollama not reachable - is it running? (%w)", err)
+		return nil, fmt.Errorf("Ollama not reachable or timed out - is it running? (%w)", err)
 	}
 	defer resp.Body.Close()
 	var cr chatResp
@@ -236,7 +242,7 @@ func webSearch(ctx context.Context, query string) string {
 		return "Error: " + err.Error()
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0")
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := toolClient.Do(req)
 	if err != nil {
 		return "Error: " + err.Error()
 	}
@@ -268,7 +274,7 @@ func dndLookup(ctx context.Context, category, index string) string {
 	if err != nil {
 		return "Error building request: " + err.Error()
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := toolClient.Do(req)
 	if err != nil {
 		return "Error calling D&D API: " + err.Error()
 	}

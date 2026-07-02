@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"oota/internal/db"
 )
@@ -298,7 +299,9 @@ func handleAPIChat(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing q", 400)
 		return
 	}
-	answer, err := runAgent(r.Context(), q)
+	ctx, cancel := context.WithTimeout(r.Context(), 90*time.Second)
+	defer cancel()
+	answer, err := runAgent(ctx, q)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
