@@ -4,8 +4,9 @@
 //
 // Usage:
 //
+//	go run ./cmd/plot                     # plot every map in GameMaps
 //	go run ./cmd/plot -map blingdenstone
-//	go run ./cmd/plot -map blingdenstone -crop 3500,350,4050,800 -out check.png
+//	go run ./cmd/plot -map blingdenstone -out check.png
 package main
 
 import (
@@ -19,7 +20,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"golang.org/x/image/font"
@@ -38,20 +38,9 @@ type marker struct {
 
 func main() {
 	dbPath := flag.String("db", "oota.db", "path to the sqlite database")
-	mapID := flag.String("map", "", "map_id to plot (required)")
-	imagesDir := flag.String("images", "images", "directory containing map images (used if the img column is a relative path)")
-	out := flag.String("out", "", "output PNG path (default <map_id>.png)")
-	radius := flag.Int("radius", 18, "marker circle radius in source-image pixels")
-	cropFlag := flag.String("crop", "", "optional crop rect \"x0,y0,x1,y1\" in source-image pixels, applied after plotting")
-	maxDim := flag.Int("max-dim", 2000, "downscale output so its longest side is at most this many pixels (0 to disable)")
+	mapID := flag.String("map", "", "map_id to plot (default: every map in GameMaps)")
+	out := flag.String("out", "", "output PNG path (default <map_id>.png; ignored when plotting more than one map)")
 	flag.Parse()
-
-	if *mapID == "" {
-		log.Fatal("-map is required")
-	}
-	if *out == "" {
-		*out = *mapID + ".png"
-	}
 
 	db, err := sql.Open("sqlite", *dbPath+"?_pragma=foreign_keys(1)")
 	if err != nil {
@@ -59,14 +48,62 @@ func main() {
 	}
 	defer db.Close()
 
-	var imgPath string
-	if err := db.QueryRow(`SELECT img FROM GameMaps WHERE id = ?`, *mapID).Scan(&imgPath); err != nil {
-		log.Fatalf("lookup map %q: %v", *mapID, err)
+	mapIDs := []string{*mapID}
+	if *mapID == "" {
+		mapIDs, err = allMapIDs(db)
+		if err != nil {
+			log.Fatalf("list maps: %v", err)
+		}
+		if len(mapIDs) == 0 {
+			log.Fatal("no maps found in GameMaps")
+		}
 	}
 
-	rows, err := db.Query(`SELECT i, x, y, title FROM MapMarkers WHERE map_id = ? ORDER BY i`, *mapID)
+	var outputs []string
+	for _, id := range mapIDs {
+		outPath := *out
+		if outPath == "" || len(mapIDs) > 1 {
+			outPath = id + ".png"
+		}
+		if err := plotMap(db, id, outPath); err != nil {
+			log.Printf("plot %q: %v", id, err)
+			continue
+		}
+		outputs = append(outputs, outPath)
+	}
+
+	if len(outputs) != len(mapIDs) {
+		os.Exit(1)
+	}
+}
+
+func allMapIDs(db *sql.DB) ([]string, error) {
+	rows, err := db.Query(`SELECT id FROM GameMaps ORDER BY id`)
 	if err != nil {
-		log.Fatalf("query markers: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+func plotMap(db *sql.DB, mapID, out string) error {
+	var imgPath string
+	if err := db.QueryRow(`SELECT img FROM GameMaps WHERE id = ?`, mapID).Scan(&imgPath); err != nil {
+		return fmt.Errorf("lookup map %q: %w", mapID, err)
+	}
+
+	rows, err := db.Query(`SELECT i, x, y, title FROM MapMarkers WHERE map_id = ? ORDER BY i`, mapID)
+	if err != nil {
+		return fmt.Errorf("query markers: %w", err)
 	}
 	defer rows.Close()
 
@@ -74,54 +111,46 @@ func main() {
 	for rows.Next() {
 		var m marker
 		if err := rows.Scan(&m.i, &m.x, &m.y, &m.title); err != nil {
-			log.Fatalf("scan marker: %v", err)
+			return fmt.Errorf("scan marker: %w", err)
 		}
 		markers = append(markers, m)
 	}
 	if err := rows.Err(); err != nil {
-		log.Fatalf("iterate markers: %v", err)
+		return fmt.Errorf("iterate markers: %w", err)
 	}
 	if len(markers) == 0 {
-		log.Fatalf("no markers found for map %q", *mapID)
+		return fmt.Errorf("no markers found for map %q", mapID)
 	}
 
 	resolved := imgPath
 	if !filepath.IsAbs(resolved) {
-		resolved = filepath.Join(*imagesDir, filepath.Base(imgPath))
+		resolved = filepath.Join("images", filepath.Base(imgPath))
 	}
 	src, err := loadImage(resolved)
 	if err != nil {
-		log.Fatalf("load image %q: %v", resolved, err)
+		return fmt.Errorf("load image %q: %w", resolved, err)
 	}
 
 	canvas := image.NewRGBA(src.Bounds())
 	draw.Draw(canvas, canvas.Bounds(), src, src.Bounds().Min, draw.Src)
 
 	for _, m := range markers {
-		drawMarker(canvas, m, *radius)
+		drawMarker(canvas, m)
 	}
 
 	final := image.Image(canvas)
-	if *cropFlag != "" {
-		r, err := parseRect(*cropFlag)
-		if err != nil {
-			log.Fatalf("bad -crop: %v", err)
-		}
-		final = cropImage(canvas, r)
-	}
-	if *maxDim > 0 {
-		final = downscale(final, *maxDim)
-	}
+	final = downscale(final, 2000)
 
-	f, err := os.Create(*out)
+	f, err := os.Create(out)
 	if err != nil {
-		log.Fatalf("create %q: %v", *out, err)
+		return fmt.Errorf("create %q: %w", out, err)
 	}
 	defer f.Close()
 	if err := png.Encode(f, final); err != nil {
-		log.Fatalf("encode png: %v", err)
+		return fmt.Errorf("encode png: %w", err)
 	}
-	fmt.Printf("plotted %d markers for %q -> %s\n", len(markers), *mapID, *out)
+	fmt.Printf("plotted %d markers for %q -> %s\n", len(markers), mapID, out)
+	return nil
 }
 
 func loadImage(path string) (image.Image, error) {
@@ -139,29 +168,6 @@ func loadImage(path string) (image.Image, error) {
 		img, _, err := image.Decode(f)
 		return img, err
 	}
-}
-
-func parseRect(s string) (image.Rectangle, error) {
-	parts := strings.Split(s, ",")
-	if len(parts) != 4 {
-		return image.Rectangle{}, fmt.Errorf("expected \"x0,y0,x1,y1\", got %q", s)
-	}
-	vals := make([]int, 4)
-	for i, p := range parts {
-		n, err := strconv.Atoi(strings.TrimSpace(p))
-		if err != nil {
-			return image.Rectangle{}, fmt.Errorf("parse %q: %w", p, err)
-		}
-		vals[i] = n
-	}
-	return image.Rect(vals[0], vals[1], vals[2], vals[3]), nil
-}
-
-func cropImage(img image.Image, r image.Rectangle) image.Image {
-	r = r.Intersect(img.Bounds())
-	out := image.NewRGBA(image.Rect(0, 0, r.Dx(), r.Dy()))
-	draw.Draw(out, out.Bounds(), img, r.Min, draw.Src)
-	return out
 }
 
 // downscale returns img resized (nearest-neighbor) so its longest side is
@@ -193,10 +199,14 @@ func downscale(img image.Image, maxDim int) image.Image {
 
 var markerColor = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 
-func drawMarker(canvas *image.RGBA, m marker, radius int) {
-	drawCircle(canvas, m.x, m.y, radius, markerColor)
+// markerRadius is the marker circle radius in source-image pixels. Never
+// needed tuning in practice, so it's a constant rather than a flag.
+const markerRadius = 18
+
+func drawMarker(canvas *image.RGBA, m marker) {
+	drawCircle(canvas, m.x, m.y, markerRadius, markerColor)
 	label := fmt.Sprintf("%d %s", m.i, m.title)
-	drawLabel(canvas, m.x+radius+6, m.y+radius/2, label)
+	drawLabel(canvas, m.x+markerRadius+6, m.y+markerRadius/2, label)
 }
 
 // drawCircle draws a ring (not filled) of the given radius, ~4px thick.
