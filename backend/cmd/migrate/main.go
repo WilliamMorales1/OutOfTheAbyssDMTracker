@@ -6,6 +6,8 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	"oota/internal/db"
 )
 
 const dbURL = "sqlite://oota.db?_pragma=foreign_keys(1)"
@@ -18,8 +20,8 @@ func main() {
 	if err := m.Down(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("migrations down: %v", err)
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("migrations up: %v", err)
+	if err := db.RunMigrations("migrations", "oota.db"); err != nil {
+		log.Fatal(err)
 	}
 	log.Println("migrations complete")
 }

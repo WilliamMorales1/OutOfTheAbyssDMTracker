@@ -14,11 +14,7 @@ import (
 
 	"oota/internal/db"
 
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "golang.org/x/image/webp"
-	_ "modernc.org/sqlite"
 )
 
 var conn *sql.DB
@@ -95,17 +91,6 @@ func logRequests(next http.Handler) http.Handler {
 }
 
 const dbPath = "oota.db"
-const dbURL = "sqlite://" + dbPath + "?_pragma=foreign_keys(1)"
-
-func runMigrations() {
-	m, err := migrate.New("file://migrations", dbURL)
-	if err != nil {
-		log.Fatalf("migrations init: %v", err)
-	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("migrations up: %v", err)
-	}
-}
 
 const frontendDist = "../frontend/dist"
 
@@ -119,11 +104,13 @@ func serveFrontend(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	runMigrations()
+	if err := db.RunMigrations("migrations", dbPath); err != nil {
+		log.Fatal(err)
+	}
 
 	ctx := context.Background()
 	var err error
-	conn, err = sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
+	conn, err = db.Open(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}

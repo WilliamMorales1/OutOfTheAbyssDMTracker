@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"oota/internal/embeddings"
 )
 
 const ollamaURL = "http://localhost:11434/v1/chat/completions"
@@ -372,36 +374,8 @@ func parseEmbedding(s string) ([]float64, error) {
 	return v, nil
 }
 
-const searchEmbedModel = "nomic-embed-text-v2-moe"
-
 func queryEmbedding(ctx context.Context, text string) (string, error) {
-	type req struct {
-		Model  string `json:"model"`
-		Prompt string `json:"prompt"`
-	}
-	type resp struct {
-		Embedding []float32 `json:"embedding"`
-	}
-	body, _ := json.Marshal(req{Model: searchEmbedModel, Prompt: text})
-	r, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:11434/api/embeddings", bytes.NewReader(body))
-	if err != nil {
-		return "", err
-	}
-	r.Header.Set("Content-Type", "application/json")
-	res, err := http.DefaultClient.Do(r)
-	if err != nil {
-		return "", fmt.Errorf("Ollama not reachable: %w", err)
-	}
-	defer res.Body.Close()
-	var er resp
-	if err := json.NewDecoder(res.Body).Decode(&er); err != nil {
-		return "", err
-	}
-	parts := make([]string, len(er.Embedding))
-	for i, f := range er.Embedding {
-		parts[i] = fmt.Sprintf("%g", f)
-	}
-	return "[" + strings.Join(parts, ",") + "]", nil
+	return embeddings.Embed(ctx, text)
 }
 
 type searchResult struct {

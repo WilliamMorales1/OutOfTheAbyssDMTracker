@@ -526,7 +526,7 @@ func main() {
 	dbPath := flag.String("db", "oota.db", "path to the sqlite database")
 	flag.Parse()
 
-	conn, err := sql.Open("sqlite", *dbPath+"?_pragma=foreign_keys(1)")
+	conn, err := db.Open(*dbPath)
 	if err != nil {
 		log.Fatalf("open db: %v", err)
 	}

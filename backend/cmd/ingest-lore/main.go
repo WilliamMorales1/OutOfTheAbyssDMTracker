@@ -8,11 +8,9 @@
 package main
 
 import (
-	"bytes"
-	"database/sql"
+	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -20,12 +18,11 @@ import (
 	"strings"
 	"sync"
 
-	_ "modernc.org/sqlite"
+	"oota/internal/db"
+	"oota/internal/embeddings"
 )
 
 const defaultSourceURL = "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/adventure/adventure-oota.json"
-const embedModel = "nomic-embed-text-v2-moe"
-const ollamaEmbedURL = "http://localhost:11434/api/embeddings"
 const maxChunkChars = 1000
 
 type adventureFile struct {
@@ -115,26 +112,6 @@ func chunk(paragraphs []string) []string {
 	return chunks
 }
 
-func embed(text string) (string, error) {
-	body, _ := json.Marshal(map[string]string{"model": embedModel, "prompt": text})
-	resp, err := http.Post(ollamaEmbedURL, "application/json", bytes.NewReader(body))
-	if err != nil {
-		return "", fmt.Errorf("ollama not reachable: %w", err)
-	}
-	defer resp.Body.Close()
-	var er struct {
-		Embedding []float32 `json:"embedding"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&er); err != nil {
-		return "", err
-	}
-	parts := make([]string, len(er.Embedding))
-	for i, f := range er.Embedding {
-		parts[i] = fmt.Sprintf("%g", f)
-	}
-	return "[" + strings.Join(parts, ",") + "]", nil
-}
-
 func main() {
 	sourceURL := flag.String("source", defaultSourceURL, "URL of the adventure JSON to ingest")
 	dbPath := flag.String("db", "oota.db", "path to the sqlite database")
@@ -154,7 +131,7 @@ func main() {
 		log.Fatalf("decode: %v", err)
 	}
 
-	conn, err := sql.Open("sqlite", *dbPath+"?_pragma=foreign_keys(1)")
+	conn, err := db.Open(*dbPath)
 	if err != nil {
 		log.Fatalf("open db: %v", err)
 	}
@@ -194,7 +171,7 @@ func main() {
 			defer wg.Done()
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			emb, err := embed(j.content)
+			emb, err := embeddings.Embed(context.Background(), j.content)
 			resultCh <- result{j, emb, err}
 		}(j)
 	}

@@ -27,7 +27,7 @@ import (
 	"golang.org/x/image/math/fixed"
 	"golang.org/x/image/webp"
 
-	_ "modernc.org/sqlite"
+	"oota/internal/db"
 )
 
 type marker struct {
@@ -42,15 +42,15 @@ func main() {
 	out := flag.String("out", "", "output PNG path (default <map_id>.png; ignored when plotting more than one map)")
 	flag.Parse()
 
-	db, err := sql.Open("sqlite", *dbPath+"?_pragma=foreign_keys(1)")
+	conn, err := db.Open(*dbPath)
 	if err != nil {
 		log.Fatalf("open db: %v", err)
 	}
-	defer db.Close()
+	defer conn.Close()
 
 	mapIDs := []string{*mapID}
 	if *mapID == "" {
-		mapIDs, err = allMapIDs(db)
+		mapIDs, err = allMapIDs(conn)
 		if err != nil {
 			log.Fatalf("list maps: %v", err)
 		}
@@ -65,7 +65,7 @@ func main() {
 		if outPath == "" || len(mapIDs) > 1 {
 			outPath = id + ".png"
 		}
-		if err := plotMap(db, id, outPath); err != nil {
+		if err := plotMap(conn, id, outPath); err != nil {
 			log.Printf("plot %q: %v", id, err)
 			continue
 		}
@@ -176,10 +176,7 @@ func loadImage(path string) (image.Image, error) {
 func downscale(img image.Image, maxDim int) image.Image {
 	b := img.Bounds()
 	w, h := b.Dx(), b.Dy()
-	longest := w
-	if h > longest {
-		longest = h
-	}
+	longest := max(h, w)
 	if longest <= maxDim {
 		return img
 	}
@@ -187,9 +184,9 @@ func downscale(img image.Image, maxDim int) image.Image {
 	nw, nh := int(float64(w)*scale), int(float64(h)*scale)
 
 	out := image.NewRGBA(image.Rect(0, 0, nw, nh))
-	for y := 0; y < nh; y++ {
+	for y := range nh {
 		sy := b.Min.Y + int(float64(y)/scale)
-		for x := 0; x < nw; x++ {
+		for x := range nw {
 			sx := b.Min.X + int(float64(x)/scale)
 			out.Set(x, y, img.At(sx, sy))
 		}
