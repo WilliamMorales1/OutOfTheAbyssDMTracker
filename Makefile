@@ -1,4 +1,4 @@
-.PHONY: build build-frontend build-backend run dev watch clean migrate reseed
+.PHONY: build build-frontend build-backend plot run dev watch clean migrate reseed
 
 build: build-frontend build-backend
 
@@ -7,6 +7,11 @@ build-frontend:
 
 build-backend:
 	cd backend && go build -o oota ./cmd/oota
+
+MAP ?= error
+
+plot:
+	cd backend && go run ./cmd/plot -map $(MAP)
 
 run: build
 	cd backend && ./oota
