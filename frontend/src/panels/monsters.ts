@@ -34,7 +34,19 @@ function monsterDetailView(m: MonsterDetail): Node {
     h('div', { className: 'card-body' }, [
       h('div', { className: 'flex flex-wrap gap-4' }, [
         h('div', { className: 'flex-1 min-w-[280px]' }, [
-          h('h3', { className: 'text-yellow-400 mb-0 text-xl font-bold' }, [m.name]),
+          h('div', { className: 'flex items-center gap-2 mb-0' }, [
+            m.tokenUrl
+              ? h('img', {
+                  src: m.tokenUrl,
+                  alt: '',
+                  className: 'rounded-full border border-gray-600 w-12 h-12 object-cover',
+                  onerror: (e: Event) => {
+                    ;(e.target as HTMLImageElement).style.display = 'none'
+                  },
+                })
+              : null,
+            h('h3', { className: 'text-yellow-400 mb-0 text-xl font-bold' }, [m.name]),
+          ]),
           h('div', { className: 'italic text-gray-400 mb-2' }, [headerLine || '—']),
 
           h('div', {}, [h('strong', {}, ['Armor Class. ']), `${m.ac}${m.acDesc ? ` (${m.acDesc})` : ''}`]),
@@ -97,12 +109,16 @@ export async function monstersPanel(): Promise<Node> {
 
   const detail = h('div', { className: 'mt-3' }, []) as HTMLDivElement
 
+  let selectSeq = 0
+
   async function selectMonster(m: MonsterRow) {
+    const seq = ++selectSeq
     nameInput.value = m.name
     hideSuggestions()
     detail.innerHTML = ''
     detail.append(h('div', { className: 'text-gray-400' }, ['Loading...']))
     const full = await api.monster(m.id)
+    if (seq !== selectSeq) return
     mount(detail, monsterDetailView(full))
   }
 

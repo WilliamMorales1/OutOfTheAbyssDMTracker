@@ -71,6 +71,7 @@ export interface MonsterDetail {
   languages: string
   environment: string
   imageUrl: string
+  tokenUrl: string
   traits: StatBlockEntry[] | null
   actions: StatBlockEntry[] | null
   reactions: StatBlockEntry[] | null

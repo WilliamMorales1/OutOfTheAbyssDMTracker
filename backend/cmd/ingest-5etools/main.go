@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -510,6 +511,14 @@ func imageURL(fluff map[string]monsterFluffJSON, name, source string) string {
 	return imgBaseURL + f.Images[0].Href.Path
 }
 
+// tokenURL builds the 5etools token image URL for a monster. Tokens aren't
+// listed in the fluff JSON - the site derives them by convention from the
+// monster's name/source, so we do the same (mirroring 5etools'
+// Renderer.monster.getTokenUrl).
+func tokenURL(name, source string) string {
+	return imgBaseURL + "bestiary/tokens/" + source + "/" + url.PathEscape(name) + ".webp"
+}
+
 func fetchJSON(url string, v any) error {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -649,6 +658,7 @@ func main() {
 				Alignment:           sql.NullString{String: extractAlignment(mj.Alignment), Valid: true},
 				Environment:         sql.NullString{String: strings.Join(mj.Environment, ", "), Valid: true},
 				ImageUrl:            sql.NullString{String: imageURL(fluff, mj.Name, mj.Source), Valid: true},
+				TokenUrl:            sql.NullString{String: tokenURL(mj.Name, mj.Source), Valid: true},
 			}}
 		}(mj)
 	}

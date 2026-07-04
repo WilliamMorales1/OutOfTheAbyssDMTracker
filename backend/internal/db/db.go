@@ -87,6 +87,7 @@ type Monster struct {
 	ImageUrl            sql.NullString
 	Reactions           sql.NullString
 	Spellcasting        sql.NullString
+	TokenUrl            sql.NullString
 }
 
 type Note struct {
@@ -139,7 +140,8 @@ SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
   COALESCE(size, '')                 AS size,
   COALESCE(alignment, '')            AS alignment,
   COALESCE(environment, '')          AS environment,
-  COALESCE(image_url, '')            AS image_url
+  COALESCE(image_url, '')            AS image_url,
+  COALESCE(token_url, '')            AS token_url
 FROM Monsters WHERE id = ?
 `
 
@@ -179,6 +181,7 @@ type GetMonsterRow struct {
 	Alignment           string
 	Environment         string
 	ImageUrl            string
+	TokenUrl            string
 }
 
 func (q *Queries) GetMonster(ctx context.Context, id int64) (GetMonsterRow, error) {
@@ -220,6 +223,7 @@ func (q *Queries) GetMonster(ctx context.Context, id int64) (GetMonsterRow, erro
 		&i.Alignment,
 		&i.Environment,
 		&i.ImageUrl,
+		&i.TokenUrl,
 	)
 	return i, err
 }
@@ -457,14 +461,14 @@ INSERT INTO Monsters (
   saving_throws, skills, damage_resistances, damage_immunities, vulnerabilities,
   condition_immunities, senses, passive_perception, languages,
   traits, actions, reactions, legendary_actions, spellcasting,
-  source, size, alignment, environment, image_url
+  source, size, alignment, environment, image_url, token_url
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?,
   ?, ?, ?, ?, ?, ?,
   ?, ?, ?, ?, ?,
   ?, ?, ?, ?,
   ?, ?, ?, ?, ?,
-  ?, ?, ?, ?, ?
+  ?, ?, ?, ?, ?, ?
 )
 ON CONFLICT(name) DO UPDATE SET
   type = excluded.type, cr = excluded.cr, hp = excluded.hp, hp_formula = excluded.hp_formula,
@@ -478,7 +482,7 @@ ON CONFLICT(name) DO UPDATE SET
   traits = excluded.traits, actions = excluded.actions, reactions = excluded.reactions,
   legendary_actions = excluded.legendary_actions, spellcasting = excluded.spellcasting,
   source = excluded.source, size = excluded.size, alignment = excluded.alignment,
-  environment = excluded.environment, image_url = excluded.image_url
+  environment = excluded.environment, image_url = excluded.image_url, token_url = excluded.token_url
 `
 
 type UpsertMonsterParams struct {
@@ -515,6 +519,7 @@ type UpsertMonsterParams struct {
 	Alignment           sql.NullString
 	Environment         sql.NullString
 	ImageUrl            sql.NullString
+	TokenUrl            sql.NullString
 }
 
 func (q *Queries) UpsertMonster(ctx context.Context, arg UpsertMonsterParams) error {
@@ -552,6 +557,7 @@ func (q *Queries) UpsertMonster(ctx context.Context, arg UpsertMonsterParams) er
 		arg.Alignment,
 		arg.Environment,
 		arg.ImageUrl,
+		arg.TokenUrl,
 	)
 	return err
 }

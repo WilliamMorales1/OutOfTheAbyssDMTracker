@@ -197,6 +197,7 @@ type monsterDetailDTO struct {
 	Languages           string           `json:"languages"`
 	Environment         string           `json:"environment"`
 	ImageUrl            string           `json:"imageUrl"`
+	TokenUrl            string           `json:"tokenUrl"`
 	Traits              []statBlockEntry `json:"traits"`
 	Actions             []statBlockEntry `json:"actions"`
 	Reactions           []statBlockEntry `json:"reactions"`
@@ -236,6 +237,7 @@ func monsterDetailToDTO(m db.GetMonsterRow) monsterDetailDTO {
 		Languages:           m.Languages,
 		Environment:         m.Environment,
 		ImageUrl:            m.ImageUrl,
+		TokenUrl:            m.TokenUrl,
 		Traits:              parseStatBlockEntries(m.Traits),
 		Actions:             parseStatBlockEntries(m.Actions),
 		Reactions:           parseStatBlockEntries(m.Reactions),
