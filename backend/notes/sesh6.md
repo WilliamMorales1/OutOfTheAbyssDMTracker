@@ -20,11 +20,13 @@ chiro sees around her the mutilated corpses of her boys
 
 after defeating her minions, her dress is already done, she "teleports" away (merges back into mushroomness)
 
+after winning, Basidia will offer them a place to rest before saying that there is direct path to the surface in Blingdenstone. It should be calmer there.
+
 ## Blingdenstone
 
 topsy and turvy are ambushed, one of them reveals themself to be a wererat
 
-deep gnome home
+deep gnome home, deep gnomes are low class british
 ruins stacked on ruins, much forgotten history
 the truth about the ruins is that they are remnants of a war after Dizzt was taken in by the deep gnomes, and then he betrayed and layed siege to svirfneblin (deep gnomes)
 
@@ -37,4 +39,6 @@ Soon after killing the pudding king, they are able to finally leave the underdar
 
 ## Grauntlgrym
 
-King Bruenor learned from 
+King Bruenor learned from Derendil, who escaped on his own
+
+left off at killing animated drow statues
