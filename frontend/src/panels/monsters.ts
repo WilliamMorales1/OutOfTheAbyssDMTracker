@@ -1,6 +1,13 @@
 import { api } from '../api.js'
 import { h, mount } from '../dom.js'
 import type { MonsterDetail, MonsterRow, StatBlockEntry } from '../types.js'
+import { CR_OPTIONS, crToNumber, scaleMonster } from '../monster-scaling.js'
+
+// baseType strips a parenthetical suffix so "aberration (beholder)" filters
+// together with plain "aberration".
+function baseType(type: string): string {
+  return type.replace(/\s*\(.*\)\s*$/, '')
+}
 
 function statRow(label: string, value: string): Node | null {
   if (!value) return null
@@ -27,7 +34,7 @@ function abilityScore(label: string, score: number): Node {
   ])
 }
 
-function monsterDetailView(m: MonsterDetail): Node {
+function monsterStatBlock(m: MonsterDetail, onScale: (e: Event) => void, baseCr: string): Node {
   const headerLine = [m.size, m.type, m.alignment].filter(Boolean).join(', ')
 
   return h('div', { className: 'card' }, [
@@ -49,6 +56,10 @@ function monsterDetailView(m: MonsterDetail): Node {
                 ])
               : null,
             h('h3', { className: 'text-yellow-400 mb-0 text-xl font-bold' }, [m.name]),
+            h('select', {
+              className: 'form-select inline-block w-auto ml-2',
+              onchange: onScale,
+            }, CR_OPTIONS.map((cr) => h('option', { value: cr, selected: cr === m.cr }, [`CR ${cr}${cr === baseCr ? ' (actual)' : ''}`]))),
           ]),
           h('div', { className: 'italic text-gray-400 mb-2' }, [headerLine || '—']),
 
@@ -103,6 +114,26 @@ function monsterDetailView(m: MonsterDetail): Node {
   ])
 }
 
+// Wraps the stat block with a CR scaler (mirroring 5etools' scale-creature
+// control): picking a target CR recomputes HP/AC/to-hit/DC/damage via
+// monster-scaling.ts and re-renders the block without refetching.
+function monsterDetailView(base: MonsterDetail): Node {
+  const baseCr = base.cr || '0'
+  const body = h('div', {}, []) as HTMLDivElement
+
+  function render(m: MonsterDetail) {
+    mount(body, monsterStatBlock(m, onScale, baseCr))
+  }
+
+  function onScale(e: Event) {
+    const value = (e.target as HTMLSelectElement).value
+    render(value === baseCr ? base : scaleMonster(base, crToNumber(value)))
+  }
+
+  render(base)
+  return body
+}
+
 export async function monstersPanel(): Promise<Node> {
   const list = (await api.monsters()) as MonsterRow[]
 
@@ -111,6 +142,11 @@ export async function monstersPanel(): Promise<Node> {
   }
 
   const detail = h('div', { className: 'mt-3' }, []) as HTMLDivElement
+
+  const types = Array.from(new Set(list.map((m) => baseType(m.type)).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b)
+  )
+  let typeFilter = ''
 
   let selectSeq = 0
 
@@ -144,7 +180,10 @@ export async function monstersPanel(): Promise<Node> {
 
   function showSuggestions(query: string) {
     const q = query.toLowerCase()
-    const matches = (q === '' ? list : list.filter((m) => m.name.toLowerCase().includes(q)))
+    const matches = list
+      .filter(
+        (m) => (typeFilter === '' || baseType(m.type) === typeFilter) && (q === '' || m.name.toLowerCase().includes(q))
+      )
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name))
     if (matches.length === 0) {
@@ -183,5 +222,19 @@ export async function monstersPanel(): Promise<Node> {
     onblur: () => hideSuggestions(),
   }) as HTMLInputElement
 
-  return h('div', {}, [nameInput, detail])
+  const typeSelect = h('select', {
+    className: 'form-select w-auto',
+    onchange: (e: Event) => {
+      typeFilter = (e.target as HTMLSelectElement).value
+      if (document.activeElement === nameInput) showSuggestions(nameInput.value)
+    },
+  }, [
+    h('option', { value: '' }, ['All Types']),
+    ...types.map((t) => h('option', { value: t }, [t])),
+  ]) as HTMLSelectElement
+
+  return h('div', {}, [
+    h('div', { className: 'flex gap-2 mb-2' }, [nameInput, typeSelect]),
+    detail,
+  ])
 }

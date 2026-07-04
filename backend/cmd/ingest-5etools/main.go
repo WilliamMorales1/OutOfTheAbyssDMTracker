@@ -28,10 +28,10 @@ import (
 const dataBaseURL = "https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data/bestiary/"
 const imgBaseURL = "https://5e.tools/img/"
 
-// sources lists the bestiary files to ingest: the core Monster Manual plus
-// every book that contributes monsters to Out of the Abyss (demons, drow,
-// Underdark creatures).
-var sources = []string{"mm", "oota", "mtf", "vgm"}
+// sources lists the bestiary files to ingest: the core Monster Manual (2014
+// and 2024 printings) plus every book that contributes monsters to Out of
+// the Abyss (demons, drow, Underdark creatures).
+var sources = []string{"mm", "oota", "mtf", "vgm", "xmm"}
 
 type entryBlock struct {
 	Name    string `json:"name"`
@@ -679,4 +679,8 @@ func main() {
 		}
 	}
 	log.Printf("done: %d monsters ingested", total)
+
+	if err := ingestSpells(ctx, q); err != nil {
+		log.Fatalf("ingest spells: %v", err)
+	}
 }

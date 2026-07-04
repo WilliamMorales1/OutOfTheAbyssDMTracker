@@ -262,6 +262,79 @@ func handleAPIMonster(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, monsterDetailToDTO(m))
 }
 
+type spellDTO struct {
+	ID      int64  `json:"id"`
+	Name    string `json:"name"`
+	Level   int64  `json:"level"`
+	School  string `json:"school"`
+	Classes string `json:"classes"`
+}
+
+func spellToDTO(s db.ListSpellsRow) spellDTO {
+	return spellDTO{
+		ID:      s.ID,
+		Name:    s.Name,
+		Level:   s.Level,
+		School:  s.School.String,
+		Classes: s.Classes,
+	}
+}
+
+func handleAPISpells(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListSpells, spellToDTO)(w, r)
+}
+
+type spellDetailDTO struct {
+	ID            int64  `json:"id"`
+	Name          string `json:"name"`
+	Level         int64  `json:"level"`
+	School        string `json:"school"`
+	Ritual        bool   `json:"ritual"`
+	CastingTime   string `json:"castingTime"`
+	Range         string `json:"range"`
+	Components    string `json:"components"`
+	Duration      string `json:"duration"`
+	Concentration bool   `json:"concentration"`
+	Classes       string `json:"classes"`
+	Description   string `json:"description"`
+	HigherLevel   string `json:"higherLevel"`
+	Source        string `json:"source"`
+}
+
+func spellDetailToDTO(s db.GetSpellRow) spellDetailDTO {
+	return spellDetailDTO{
+		ID:            s.ID,
+		Name:          s.Name,
+		Level:         s.Level,
+		School:        s.School,
+		Ritual:        s.Ritual,
+		CastingTime:   s.CastingTime,
+		Range:         s.Range,
+		Components:    s.Components,
+		Duration:      s.Duration,
+		Concentration: s.Concentration,
+		Classes:       s.Classes,
+		Description:   s.Description,
+		HigherLevel:   s.HigherLevel,
+		Source:        s.Source,
+	}
+}
+
+func handleAPISpell(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/spells/")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid spell id", 400)
+		return
+	}
+	s, err := q.GetSpell(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+	writeJSON(w, spellDetailToDTO(s))
+}
+
 func handleAPIMaps(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, gameMaps)
 }

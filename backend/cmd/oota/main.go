@@ -129,6 +129,8 @@ func main() {
 	mux.HandleFunc("/api/monsters", handleAPIMonsters)
 	mux.HandleFunc("/api/monsters/", handleAPIMonster)
 	mux.HandleFunc("/api/monster-stats", handleAPIMonsterStats)
+	mux.HandleFunc("/api/spells", handleAPISpells)
+	mux.HandleFunc("/api/spells/", handleAPISpell)
 	mux.HandleFunc("/api/sessions", handleAPISessions)
 	mux.HandleFunc("/api/maps", handleAPIMaps)
 	mux.HandleFunc("/api/refs", handleAPIRefs)

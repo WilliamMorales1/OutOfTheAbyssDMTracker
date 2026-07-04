@@ -1,4 +1,4 @@
-import type { MonsterDetail, MonsterRow, MonsterStat } from './types.js'
+import type { MonsterDetail, MonsterRow, MonsterStat, SpellDetail, SpellRow } from './types.js'
 
 async function getJSON<T>(url: string): Promise<T> {
   const res = await fetch(url)
@@ -12,6 +12,8 @@ export const api = {
   monsters: () => getJSON<MonsterRow[]>('/api/monsters'),
   monster: (id: number) => getJSON<MonsterDetail>(`/api/monsters/${id}`),
   monsterStats: () => getJSON<MonsterStat[]>('/api/monster-stats'),
+  spells: () => getJSON<SpellRow[]>('/api/spells'),
+  spell: (id: number) => getJSON<SpellDetail>(`/api/spells/${id}`),
   maps: () => getJSON('/api/maps'),
   refs: () => getJSON('/api/refs'),
   search: (q: string) => getJSON(`/api/search?q=${encodeURIComponent(q)}`),

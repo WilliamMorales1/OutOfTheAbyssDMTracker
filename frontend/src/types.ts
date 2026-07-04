@@ -80,6 +80,31 @@ export interface MonsterDetail {
   notes: string
 }
 
+export interface SpellRow {
+  id: number
+  name: string
+  level: number
+  school: string
+  classes: string
+}
+
+export interface SpellDetail {
+  id: number
+  name: string
+  level: number
+  school: string
+  ritual: boolean
+  castingTime: string
+  range: string
+  components: string
+  duration: string
+  concentration: boolean
+  classes: string
+  description: string
+  higherLevel: string
+  source: string
+}
+
 export interface Marker {
   i: number
   x: number

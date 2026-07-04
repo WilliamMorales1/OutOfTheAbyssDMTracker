@@ -576,3 +576,143 @@ func (q *Queries) UpsertNote(ctx context.Context, arg UpsertNoteParams) error {
 	_, err := q.db.ExecContext(ctx, upsertNote, arg.Name, arg.Content)
 	return err
 }
+
+const upsertSpell = `
+INSERT INTO Spells (
+  name, level, school, ritual, casting_time, range, components, duration,
+  concentration, classes, description, higher_level, source
+) VALUES (
+  ?, ?, ?, ?, ?, ?, ?, ?,
+  ?, ?, ?, ?, ?
+)
+ON CONFLICT(name) DO UPDATE SET
+  level = excluded.level, school = excluded.school, ritual = excluded.ritual,
+  casting_time = excluded.casting_time, range = excluded.range,
+  components = excluded.components, duration = excluded.duration,
+  concentration = excluded.concentration, classes = excluded.classes,
+  description = excluded.description, higher_level = excluded.higher_level,
+  source = excluded.source
+`
+
+type UpsertSpellParams struct {
+	Name          string
+	Level         int64
+	School        sql.NullString
+	Ritual        bool
+	CastingTime   sql.NullString
+	Range         sql.NullString
+	Components    sql.NullString
+	Duration      sql.NullString
+	Concentration bool
+	Classes       sql.NullString
+	Description   sql.NullString
+	HigherLevel   sql.NullString
+	Source        sql.NullString
+}
+
+func (q *Queries) UpsertSpell(ctx context.Context, arg UpsertSpellParams) error {
+	_, err := q.db.ExecContext(ctx, upsertSpell,
+		arg.Name,
+		arg.Level,
+		arg.School,
+		arg.Ritual,
+		arg.CastingTime,
+		arg.Range,
+		arg.Components,
+		arg.Duration,
+		arg.Concentration,
+		arg.Classes,
+		arg.Description,
+		arg.HigherLevel,
+		arg.Source,
+	)
+	return err
+}
+
+const listSpells = `SELECT id, name, level, school, COALESCE(classes, '') AS classes FROM Spells ORDER BY level, name`
+
+type ListSpellsRow struct {
+	ID      int64
+	Name    string
+	Level   int64
+	School  sql.NullString
+	Classes string
+}
+
+func (q *Queries) ListSpells(ctx context.Context) ([]ListSpellsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listSpells)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListSpellsRow
+	for rows.Next() {
+		var i ListSpellsRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Level, &i.School, &i.Classes); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSpell = `
+SELECT id, name, level,
+  COALESCE(school, '')        AS school,
+  ritual,
+  COALESCE(casting_time, '')  AS casting_time,
+  COALESCE(range, '')         AS range,
+  COALESCE(components, '')    AS components,
+  COALESCE(duration, '')      AS duration,
+  concentration,
+  COALESCE(classes, '')       AS classes,
+  COALESCE(description, '')   AS description,
+  COALESCE(higher_level, '')  AS higher_level,
+  COALESCE(source, '')        AS source
+FROM Spells WHERE id = ?
+`
+
+type GetSpellRow struct {
+	ID            int64
+	Name          string
+	Level         int64
+	School        string
+	Ritual        bool
+	CastingTime   string
+	Range         string
+	Components    string
+	Duration      string
+	Concentration bool
+	Classes       string
+	Description   string
+	HigherLevel   string
+	Source        string
+}
+
+func (q *Queries) GetSpell(ctx context.Context, id int64) (GetSpellRow, error) {
+	row := q.db.QueryRowContext(ctx, getSpell, id)
+	var i GetSpellRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Level,
+		&i.School,
+		&i.Ritual,
+		&i.CastingTime,
+		&i.Range,
+		&i.Components,
+		&i.Duration,
+		&i.Concentration,
+		&i.Classes,
+		&i.Description,
+		&i.HigherLevel,
+		&i.Source,
+	)
+	return i, err
+}
