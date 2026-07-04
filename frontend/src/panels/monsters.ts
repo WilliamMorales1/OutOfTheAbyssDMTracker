@@ -36,14 +36,17 @@ function monsterDetailView(m: MonsterDetail): Node {
         h('div', { className: 'flex-1 min-w-[280px]' }, [
           h('div', { className: 'flex items-center gap-2 mb-0' }, [
             m.tokenUrl
-              ? h('img', {
-                  src: m.tokenUrl,
-                  alt: '',
-                  className: 'rounded-full border border-gray-600 w-12 h-12 object-cover',
-                  onerror: (e: Event) => {
-                    ;(e.target as HTMLImageElement).style.display = 'none'
-                  },
-                })
+              ? h('div', { className: 'group relative z-10 w-12 h-12 shrink-0' }, [
+                  h('img', {
+                    src: m.tokenUrl,
+                    alt: '',
+                    className:
+                      'absolute inset-0 w-full h-full rounded-full border border-gray-600 object-cover cursor-zoom-in group-hover:shadow-xl group-hover:border-gray-400 group-hover:scale-[5] transition-transform duration-150 origin-center',
+                    onerror: (e: Event) => {
+                      ;(e.target as HTMLImageElement).style.display = 'none'
+                    },
+                  }),
+                ])
               : null,
             h('h3', { className: 'text-yellow-400 mb-0 text-xl font-bold' }, [m.name]),
           ]),
