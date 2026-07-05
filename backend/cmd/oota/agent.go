@@ -28,7 +28,6 @@ const systemPrompt = `You are a D&D Dungeon Master assistant for "Out of the Aby
 Use the search and sql tools to answer questions about the campaign. Use lore_search for narrative/story lore from chapter text. Use web_search for general knowledge not in the database.
 
 Database schema:
-  NPCS(id, name, madness int, disposition, location, notes, description)
   Monsters(id, name, type, cr, hp, hp_formula, ac, ac_desc, speed, str, dex, con, int_score, wis, cha, saving_throws, damage_resistances, damage_immunities, condition_immunities, senses, languages, traits, actions, legendary_actions, notes)
   Sessions(id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, checkpoint)
 

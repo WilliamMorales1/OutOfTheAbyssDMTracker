@@ -1,13 +1,3 @@
-CREATE TABLE NPCS (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    description TEXT,
-    madness     INT,
-    name        TEXT,
-    disposition TEXT,
-    location    TEXT,
-    notes       TEXT
-);
-
 CREATE TABLE Monsters (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     name                 TEXT UNIQUE NOT NULL,

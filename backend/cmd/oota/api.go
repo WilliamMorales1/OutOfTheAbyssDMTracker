@@ -78,32 +78,6 @@ func handleAPISessions(w http.ResponseWriter, r *http.Request) {
 	listHandler(q.ListSessions, sessionToDTO)(w, r)
 }
 
-type npcDTO struct {
-	Name         string `json:"name"`
-	Madness      int64  `json:"madness"`
-	MadnessStars string `json:"madnessStars"`
-	Disposition  string `json:"disposition"`
-	Location     string `json:"location"`
-	Description  string `json:"description"`
-	Notes        string `json:"notes"`
-}
-
-func npcToDTO(n db.ListNPCsRow) npcDTO {
-	return npcDTO{
-		Name:         n.Name.String,
-		Madness:      n.Madness.Int64,
-		MadnessStars: stars(n.Madness.Int64),
-		Disposition:  n.Disposition.String,
-		Location:     n.Location.String,
-		Description:  n.Description.String,
-		Notes:        n.Notes.String,
-	}
-}
-
-func handleAPINPCs(w http.ResponseWriter, r *http.Request) {
-	listHandler(q.ListNPCs, npcToDTO)(w, r)
-}
-
 type monsterDTO struct {
 	ID       int64  `json:"id"`
 	Name     string `json:"name"`

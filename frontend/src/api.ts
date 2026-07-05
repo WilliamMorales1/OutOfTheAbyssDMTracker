@@ -8,7 +8,6 @@ async function getJSON<T>(url: string): Promise<T> {
 
 export const api = {
   sessions: () => getJSON('/api/sessions'),
-  npcs: () => getJSON('/api/npcs'),
   monsters: () => getJSON<MonsterRow[]>('/api/monsters'),
   monster: (id: number) => getJSON<MonsterDetail>(`/api/monsters/${id}`),
   monsterStats: () => getJSON<MonsterStat[]>('/api/monster-stats'),

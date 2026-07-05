@@ -1,6 +1,5 @@
 import { h, mount } from './dom.js'
 import { sessionsPanel } from './panels/sessions.js'
-import { npcsPanel } from './panels/npcs.js'
 import { monstersPanel } from './panels/monsters.js'
 import { spellsPanel } from './panels/spells.js'
 import { mapsPanel } from './panels/maps.js'
@@ -13,7 +12,6 @@ import { refsPanel } from './panels/references.js'
 const tabs = [
   { name: 'Sessions', path: 'sessions', load: sessionsPanel },
   { name: 'Notes', path: 'notes', load: notesPanel },
-  { name: 'NPCs', path: 'npcs', load: npcsPanel },
   { name: 'Monsters', path: 'monsters', load: monstersPanel },
   { name: 'Spells', path: 'spells', load: spellsPanel },
   { name: 'Maps', path: 'maps', load: mapsPanel },

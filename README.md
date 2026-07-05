@@ -1,10 +1,10 @@
 # OOTA — Out of the Abyss DM Companion
 
-A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks NPCs, monsters, sessions, maps, notes, and initiative — plus a chat assistant and semantic lore search powered by a local LLM.
+A local web app for running the *Out of the Abyss* D&D 5e campaign. Tracks monsters, sessions, maps, notes, and initiative — plus a chat assistant and semantic lore search powered by a local LLM.
 
 ## Features
 
-- **Campaign data browser** — sortable/searchable panels for NPCs, monsters, sessions, maps, and notes
+- **Campaign data browser** — sortable/searchable panels for monsters, sessions, maps, and notes
 - **Initiative tracker** — auto-fills combatants from the monster bestiary
 - **DM chat assistant** — asks an Ollama-hosted LLM questions about the campaign; the model can query the database and search for answers
 - **Lore search** — semantic vector search over the chunked *Out of the Abyss* adventure text using `nomic-embed-text-v2-moe` embeddings via Ollama
@@ -59,7 +59,7 @@ Migrations live in `backend/migrations/` and are managed by [golang-migrate](htt
 | Migration | Contents                                          |
 | --------- | -------------------------------------------------- |
 | `001`   | Schema — all table definitions                    |
-| `002`   | Seed data (NPCs, sessions, maps)                  |
+| `002`   | Seed data (sessions, maps)                        |
 | `003`   | Monster schema for 5etools-sourced bestiary data  |
 
 To run migrations manually:
@@ -95,7 +95,7 @@ go run ./backend/cmd/migrate
 │   ├── images/                # static images, served at /images
 │   └── go.mod / go.sum
 ├── frontend/
-│   └── src/panels/           # chat, initiative, maps, monsters, notes, npcs, sessions, search
+│   └── src/panels/           # chat, initiative, maps, monsters, notes, sessions, search
 └── Makefile                  # build/run/watch targets for both frontend and backend
 ```
 

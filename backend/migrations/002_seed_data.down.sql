@@ -3,4 +3,3 @@ DELETE FROM MapMarkers;
 DELETE FROM GameMaps;
 DELETE FROM Monsters;
 DELETE FROM Sessions;
-DELETE FROM NPCS;

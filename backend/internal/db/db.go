@@ -95,16 +95,6 @@ type Note struct {
 	Content string
 }
 
-type Npc struct {
-	ID          int64
-	Description sql.NullString
-	Madness     sql.NullInt64
-	Name        sql.NullString
-	Disposition sql.NullString
-	Location    sql.NullString
-	Notes       sql.NullString
-}
-
 type Session struct {
 	ID            int64
 	SessionNum    int64
@@ -317,49 +307,6 @@ func (q *Queries) ListMonsters(ctx context.Context) ([]ListMonstersRow, error) {
 			&i.Type,
 			&i.Cr,
 			&i.ImageUrl,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listNPCs = `SELECT id, name, madness, disposition, location, notes, description FROM NPCS ORDER BY name`
-
-type ListNPCsRow struct {
-	ID          int64
-	Name        sql.NullString
-	Madness     sql.NullInt64
-	Disposition sql.NullString
-	Location    sql.NullString
-	Notes       sql.NullString
-	Description sql.NullString
-}
-
-func (q *Queries) ListNPCs(ctx context.Context) ([]ListNPCsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listNPCs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListNPCsRow
-	for rows.Next() {
-		var i ListNPCsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Madness,
-			&i.Disposition,
-			&i.Location,
-			&i.Notes,
-			&i.Description,
 		); err != nil {
 			return nil, err
 		}

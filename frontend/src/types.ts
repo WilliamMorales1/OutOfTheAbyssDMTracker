@@ -10,16 +10,6 @@ export interface Session {
   checkpoint: string
 }
 
-export interface Npc {
-  name: string
-  madness: number
-  madnessStars: string
-  disposition: string
-  location: string
-  description: string
-  notes: string
-}
-
 export interface MonsterRow {
   id: number
   name: string

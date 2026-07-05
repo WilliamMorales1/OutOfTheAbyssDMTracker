@@ -125,7 +125,6 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("images"))))
-	mux.HandleFunc("/api/npcs", handleAPINPCs)
 	mux.HandleFunc("/api/monsters", handleAPIMonsters)
 	mux.HandleFunc("/api/monsters/", handleAPIMonster)
 	mux.HandleFunc("/api/monster-stats", handleAPIMonsterStats)
