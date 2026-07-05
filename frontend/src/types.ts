@@ -76,7 +76,10 @@ export interface MonsterDetail {
   actions: StatBlockEntry[] | null
   reactions: StatBlockEntry[] | null
   legendaryActions: StatBlockEntry[] | null
+  bonusActions: StatBlockEntry[] | null
   spellcasting: StatBlockEntry[] | null
+  lairActions: StatBlockEntry[] | null
+  regionalEffects: StatBlockEntry[] | null
   notes: string
 }
 

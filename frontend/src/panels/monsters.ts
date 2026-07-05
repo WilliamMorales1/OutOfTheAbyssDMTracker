@@ -19,7 +19,10 @@ function entryBlock(title: string, entries: StatBlockEntry[] | null): Node | nul
   return h('div', { className: 'mb-3' }, [
     h('h5', { className: 'text-yellow-400 border-b border-gray-600 pb-1 font-semibold' }, [title]),
     ...entries.map((e) =>
-      h('p', { className: 'mb-2' }, [h('strong', { className: 'italic' }, [`${e.name}. `]), e.text])
+      h('p', { className: 'mb-2' }, [
+        ...(e.name ? [h('strong', { className: 'italic' }, [`${e.name}. `])] : []),
+        e.text,
+      ])
     ),
   ])
 }
@@ -105,8 +108,11 @@ function monsterStatBlock(m: MonsterDetail, onScale: (e: Event) => void, baseCr:
 
       entryBlock('Traits', m.traits),
       entryBlock('Actions', m.actions),
+      entryBlock('Bonus Actions', m.bonusActions),
       entryBlock('Reactions', m.reactions),
       entryBlock('Legendary Actions', m.legendaryActions),
+      entryBlock('Lair Actions', m.lairActions),
+      entryBlock('Regional Effects', m.regionalEffects),
       entryBlock('Spellcasting', m.spellcasting),
 
       m.notes ? h('div', { className: 'mt-3 text-gray-400' }, [h('strong', {}, ['Notes. ']), m.notes]) : null,

@@ -77,8 +77,13 @@ type monsterJSON struct {
 	CR              json.RawMessage            `json:"cr"`
 	Trait           []entryBlock               `json:"trait"`
 	Action          []entryBlock               `json:"action"`
+	BonusAction     []entryBlock               `json:"bonus"`
 	Reaction        []entryBlock               `json:"reaction"`
 	Legendary       []entryBlock               `json:"legendary"`
+	LegendaryGroup  *struct {
+		Name   string `json:"name"`
+		Source string `json:"source"`
+	} `json:"legendaryGroup"`
 	Spellcasting    []spellcastingBlock        `json:"spellcasting"`
 	Environment     []string                   `json:"environment"`
 }
@@ -216,6 +221,39 @@ func entryBlocksToJSON(blocks []entryBlock) string {
 	}
 	j, _ := json.Marshal(res)
 	return string(j)
+}
+
+// rawEntriesToJSON flattens a flat 5etools entries array (as used in
+// lairActions / regionalEffects) into a single stat-block entry with no name.
+func rawEntriesToJSON(raws []json.RawMessage) string {
+	var all []any
+	for _, r := range raws {
+		var v any
+		if err := json.Unmarshal(r, &v); err == nil {
+			all = append(all, v)
+		}
+	}
+	text := flattenEntries(all)
+	if text == "" {
+		return ""
+	}
+	type out struct {
+		Name string `json:"name"`
+		Text string `json:"text"`
+	}
+	j, _ := json.Marshal([]out{{Name: "", Text: text}})
+	return string(j)
+}
+
+type legendaryGroupEntry struct {
+	Name            string            `json:"name"`
+	Source          string            `json:"source"`
+	LairActions     []json.RawMessage `json:"lairActions"`
+	RegionalEffects []json.RawMessage `json:"regionalEffects"`
+}
+
+type legendaryGroupsFile struct {
+	LegendaryGroup []legendaryGroupEntry `json:"legendaryGroup"`
 }
 
 func spellcastingToJSON(blocks []spellcastingBlock) string {
@@ -545,8 +583,11 @@ func main() {
 	fluff := map[string]monsterFluffJSON{}
 	rawIndex := map[string]map[string]any{}
 	var rawOrder []string
+	// keyFilePriority tracks which source-file index (position in sources slice)
+	// each name|source key came from. Higher index = higher priority.
+	keyFilePriority := map[string]int{}
 
-	for _, src := range sources {
+	for srcIdx, src := range sources {
 		var bf bestiaryFileRaw
 		log.Printf("fetching bestiary-%s.json", src)
 		if err := fetchJSON(dataBaseURL+"bestiary-"+src+".json", &bf); err != nil {
@@ -560,6 +601,7 @@ func main() {
 				rawOrder = append(rawOrder, key)
 			}
 			rawIndex[key] = m
+			keyFilePriority[key] = srcIdx
 		}
 
 		var ff fluffFile
@@ -580,9 +622,45 @@ func main() {
 		templates = map[string]templateApply{}
 	}
 
+	lgMap := map[string]legendaryGroupEntry{}
+	var lgFile legendaryGroupsFile
+	log.Printf("fetching legendarygroups.json")
+	if err := fetchJSON(dataBaseURL+"legendarygroups.json", &lgFile); err != nil {
+		log.Printf("warning: failed to load legendary groups: %v", err)
+	} else {
+		for _, lg := range lgFile.LegendaryGroup {
+			lgMap[lg.Name+"|"+lg.Source] = lg
+		}
+		log.Printf("loaded %d legendary groups", len(lgMap))
+	}
+
+	// Deduplicate rawOrder so each monster NAME appears only once, keeping the
+	// version from the highest-priority source file (later in sources = higher
+	// priority). This prevents e.g. "Medusa|MOT" (present inside bestiary-xmm.json
+	// with its original source attribution) from shadowing "Medusa|XMM", and
+	// eliminates the non-deterministic race when both MM and XMM have the same
+	// monster name.
+	nameToPreferredKey := map[string]string{}
+	for _, key := range rawOrder {
+		name, _, _ := strings.Cut(key, "|")
+		if existing, ok := nameToPreferredKey[name]; !ok || keyFilePriority[key] >= keyFilePriority[existing] {
+			nameToPreferredKey[name] = key
+		}
+	}
+	var dedupedOrder []string
+	seenDedup := map[string]bool{}
+	for _, key := range rawOrder {
+		name, _, _ := strings.Cut(key, "|")
+		if nameToPreferredKey[name] == key && !seenDedup[key] {
+			dedupedOrder = append(dedupedOrder, key)
+			seenDedup[key] = true
+		}
+	}
+	log.Printf("deduplicated %d raw entries to %d unique monsters", len(rawOrder), len(dedupedOrder))
+
 	res := newResolver(rawIndex, templates)
 	var monsters []monsterJSON
-	for _, key := range rawOrder {
+	for _, key := range dedupedOrder {
 		merged := res.resolve(key)
 		b, err := json.Marshal(merged)
 		if err != nil {
@@ -624,6 +702,14 @@ func main() {
 			if mj.Passive != nil {
 				passive = int64(*mj.Passive)
 			}
+			lairActions, regionalEffects := "", ""
+			if mj.LegendaryGroup != nil {
+				lgKey := mj.LegendaryGroup.Name + "|" + mj.LegendaryGroup.Source
+				if lg, ok := lgMap[lgKey]; ok {
+					lairActions = rawEntriesToJSON(lg.LairActions)
+					regionalEffects = rawEntriesToJSON(lg.RegionalEffects)
+				}
+			}
 			resultCh <- result{params: db.UpsertMonsterParams{
 				Name:                mj.Name,
 				Type:                sql.NullString{String: extractType(mj.Type), Valid: true},
@@ -652,7 +738,10 @@ func main() {
 				Actions:             sql.NullString{String: entryBlocksToJSON(mj.Action), Valid: true},
 				Reactions:           sql.NullString{String: entryBlocksToJSON(mj.Reaction), Valid: true},
 				LegendaryActions:    sql.NullString{String: entryBlocksToJSON(mj.Legendary), Valid: true},
+				BonusActions:        sql.NullString{String: entryBlocksToJSON(mj.BonusAction), Valid: true},
 				Spellcasting:        sql.NullString{String: spellcastingToJSON(mj.Spellcasting), Valid: true},
+				LairActions:         sql.NullString{String: lairActions, Valid: true},
+				RegionalEffects:     sql.NullString{String: regionalEffects, Valid: true},
 				Source:              sql.NullString{String: mj.Source, Valid: true},
 				Size:                sql.NullString{String: strings.Join(mj.Size, ""), Valid: true},
 				Alignment:           sql.NullString{String: extractAlignment(mj.Alignment), Valid: true},

@@ -202,7 +202,10 @@ type monsterDetailDTO struct {
 	Actions             []statBlockEntry `json:"actions"`
 	Reactions           []statBlockEntry `json:"reactions"`
 	LegendaryActions    []statBlockEntry `json:"legendaryActions"`
+	BonusActions        []statBlockEntry `json:"bonusActions"`
 	Spellcasting        []statBlockEntry `json:"spellcasting"`
+	LairActions         []statBlockEntry `json:"lairActions"`
+	RegionalEffects     []statBlockEntry `json:"regionalEffects"`
 	Notes               string           `json:"notes"`
 }
 
@@ -242,7 +245,10 @@ func monsterDetailToDTO(m db.GetMonsterRow) monsterDetailDTO {
 		Actions:             parseStatBlockEntries(m.Actions),
 		Reactions:           parseStatBlockEntries(m.Reactions),
 		LegendaryActions:    parseStatBlockEntries(m.LegendaryActions),
+		BonusActions:        parseStatBlockEntries(m.BonusActions),
 		Spellcasting:        parseStatBlockEntries(m.Spellcasting),
+		LairActions:         parseStatBlockEntries(m.LairActions),
+		RegionalEffects:     parseStatBlockEntries(m.RegionalEffects),
 		Notes:               m.Notes,
 	}
 }

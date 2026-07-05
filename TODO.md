@@ -1,3 +1,3 @@
 # TODOs
 
-- fix sloobludop's markers
+- remove NPCs panel

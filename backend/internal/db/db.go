@@ -134,7 +134,10 @@ SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
   COALESCE(actions, '')              AS actions,
   COALESCE(reactions, '')            AS reactions,
   COALESCE(legendary_actions, '')    AS legendary_actions,
+  COALESCE(bonus_actions, '')        AS bonus_actions,
   COALESCE(spellcasting, '')         AS spellcasting,
+  COALESCE(lair_actions, '')         AS lair_actions,
+  COALESCE(regional_effects, '')     AS regional_effects,
   COALESCE(notes, '')                AS notes,
   COALESCE(source, '')               AS source,
   COALESCE(size, '')                 AS size,
@@ -174,7 +177,10 @@ type GetMonsterRow struct {
 	Actions             string
 	Reactions           string
 	LegendaryActions    string
+	BonusActions        string
 	Spellcasting        string
+	LairActions         string
+	RegionalEffects     string
 	Notes               string
 	Source              string
 	Size                string
@@ -216,7 +222,10 @@ func (q *Queries) GetMonster(ctx context.Context, id int64) (GetMonsterRow, erro
 		&i.Actions,
 		&i.Reactions,
 		&i.LegendaryActions,
+		&i.BonusActions,
 		&i.Spellcasting,
+		&i.LairActions,
+		&i.RegionalEffects,
 		&i.Notes,
 		&i.Source,
 		&i.Size,
@@ -460,14 +469,16 @@ INSERT INTO Monsters (
   str, dex, con, int_score, wis, cha,
   saving_throws, skills, damage_resistances, damage_immunities, vulnerabilities,
   condition_immunities, senses, passive_perception, languages,
-  traits, actions, reactions, legendary_actions, spellcasting,
+  traits, actions, reactions, legendary_actions, bonus_actions, spellcasting,
+  lair_actions, regional_effects,
   source, size, alignment, environment, image_url, token_url
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?,
   ?, ?, ?, ?, ?, ?,
   ?, ?, ?, ?, ?,
   ?, ?, ?, ?,
-  ?, ?, ?, ?, ?,
+  ?, ?, ?, ?, ?, ?,
+  ?, ?,
   ?, ?, ?, ?, ?, ?
 )
 ON CONFLICT(name) DO UPDATE SET
@@ -480,7 +491,8 @@ ON CONFLICT(name) DO UPDATE SET
   vulnerabilities = excluded.vulnerabilities, condition_immunities = excluded.condition_immunities,
   senses = excluded.senses, passive_perception = excluded.passive_perception, languages = excluded.languages,
   traits = excluded.traits, actions = excluded.actions, reactions = excluded.reactions,
-  legendary_actions = excluded.legendary_actions, spellcasting = excluded.spellcasting,
+  legendary_actions = excluded.legendary_actions, bonus_actions = excluded.bonus_actions, spellcasting = excluded.spellcasting,
+  lair_actions = excluded.lair_actions, regional_effects = excluded.regional_effects,
   source = excluded.source, size = excluded.size, alignment = excluded.alignment,
   environment = excluded.environment, image_url = excluded.image_url, token_url = excluded.token_url
 `
@@ -513,7 +525,10 @@ type UpsertMonsterParams struct {
 	Actions             sql.NullString
 	Reactions           sql.NullString
 	LegendaryActions    sql.NullString
+	BonusActions        sql.NullString
 	Spellcasting        sql.NullString
+	LairActions         sql.NullString
+	RegionalEffects     sql.NullString
 	Source              sql.NullString
 	Size                sql.NullString
 	Alignment           sql.NullString
@@ -551,7 +566,10 @@ func (q *Queries) UpsertMonster(ctx context.Context, arg UpsertMonsterParams) er
 		arg.Actions,
 		arg.Reactions,
 		arg.LegendaryActions,
+		arg.BonusActions,
 		arg.Spellcasting,
+		arg.LairActions,
+		arg.RegionalEffects,
 		arg.Source,
 		arg.Size,
 		arg.Alignment,
