@@ -1,5 +1,16 @@
 # Session 7
 
+## Current party
+
+Delta
+Chiro
+Yvenna
+Shuushar
+Ront
+Sarith
+Topsy & Turvy
+Stool
+
 ## Blingdenstone
 
 Xorn: extra img: <https://5e.tools/img/bestiary/XMM/Xorn.webp>
@@ -28,14 +39,14 @@ Chief Dorbo and Quartermaster Senni Diggermattock are community leaders and both
 both defacto rulers
 
 Dorbo rebuilding industry, loving husband and serious leader
-Senni is the wife of Dorbo and center for trade with Mantol-Derith, Grauntlgrym, Mithral Hall, 
+Senni is the wife of Dorbo and center for trade with Mantol-Derith, Grauntlgrym, Mithral Hall,
 managing magical security
 they see the wererats as a dangerous race who cannot be trusted, and would exterminate if they do not leave
 
 the main industry and trade of Blingdenstone is spell gems
 
 earth elementals are summoned to protect the miners
-summoned by the Stoneheart enclave - leader  = Yantha Coaxrock, a young mage
+summoned by the Stoneheart enclave - leader = Yantha Coaxrock, a young mage
 
 many ruins and dead from the past war, in various states of repair
 many many ghosts around, of varying hostility
@@ -47,18 +58,21 @@ they have to get past 2 basilisks with a few eggs of their nest
 
 Stairs cart lift is operated by an earth elemental
 deep gnomes at the main gate have spell gems that skin for invisible things
+they say "if ye 'ave nothin' to hide, ye 'ave nothin' to fear"
 
 there is a small maze between the main gate and the inner city, the guards will tell them some directions
 and top/turv will try to help, see puzzle below
 
 there are 4 doors and one pedestal with a spell gem that creates a small hologram that says
 Slime is sticky, yucky, goopy, oozing, and gross. Sometimes they may even lie. A lie is...
+
 - gross, oozing, goopy, yucky, and sticky
 - sticky, yucky, and oozing
 - yucky, goopy, and gross
 - oozing, sticky, goopy, and yucky
 
 Gnomes are cunning, brave, small, inventive, forgetful, and creative. Others however say they should be gone. Those who are not gone are...
+
 - brave, small, inventive, cunning, forgetful, and creative
 - forgetful, creative, and small
 - cunning, small, brave, and forgetful
@@ -84,7 +98,29 @@ potential sample in 18
 19 is a garden of statues made by naheedra (medusa who serves Ogremoch)
 she was originally a drow who wanted to use spell gems to be beautiful forever, in some ways she got her wish
 
+10 Sark tells about medusa in 20
 
+21 if destroy all caves, Ogremoch's Bane appears
+
+13 Gurnik tells about ruby spell gem to put in menhir to cleanse
+
+25 wererats do a dental click, greet here
+
+26 if see topsy/turvy, say they are welcome to stay
+
+28 hologram of pudding king, he is rrroyal accent deep but cunty, calling on his children to disembowel them
+inside the giant sphere is the first relic needed for the ritual in menzo
+
+29 gibbering mouther feeding on oozes
+
+pudding king fight is a city-wide oprganized attack
+pudding king turns to ooze (his now true form) after dying
+
+they get a stone of controlling earth elementals
+
+### Way out of the Underdark
+
+Ront unsure whether to stay on the surface or to help them out
 
 ### Ogremach's Bane
 
@@ -97,7 +133,7 @@ she will reward 10gp per hit die of the creature that the sample was taken from
 
 pudding king in the deepest part of the city
 steal and talks to rotten food
-he was shunned and eventually struck out by himself 
+he was shunned and eventually struck out by himself
 has a boyfriend and a girlfriend ooze he calls:
 pricess ebonmire = black pudding
 prince livid = grey ooze
@@ -105,7 +141,11 @@ Juiblex is called the Faceless King
 he currently tries to take over the rest of the city
 calls slimes his children and wants the city to turn into a giant glob of goo
 
+pudding king = CR
+
 ### plans for later
 
 someone should lead then to the surface and give them a rundown of what to do about the demons
+Derendil shows back up somehow
 
+maybe the party splits up, with just the PCs only getting a few of NPC staying around

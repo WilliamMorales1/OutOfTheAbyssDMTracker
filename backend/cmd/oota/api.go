@@ -78,6 +78,94 @@ func handleAPISessions(w http.ResponseWriter, r *http.Request) {
 	listHandler(q.ListSessions, sessionToDTO)(w, r)
 }
 
+type demonLordDTO struct {
+	Name              string `json:"name"`
+	Dominions         string `json:"dominions"`
+	Epithets          string `json:"epithets"`
+	Layer             string `json:"layer"`
+	Description       string `json:"description"`
+	Servants          string `json:"servants"`
+	Component         string `json:"component"`
+	ComponentLocation string `json:"componentLocation"`
+}
+
+func demonLordToDTO(d db.DemonLord) demonLordDTO {
+	return demonLordDTO{
+		Name:              d.Name,
+		Dominions:         d.Dominions,
+		Epithets:          d.Epithets,
+		Layer:             d.Layer,
+		Description:       d.Description,
+		Servants:          d.Servants,
+		Component:         d.Component,
+		ComponentLocation: d.ComponentLocation,
+	}
+}
+
+func handleAPIDemonLords(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListDemonLords, demonLordToDTO)(w, r)
+}
+
+type actionDTO struct {
+	Name        string `json:"name"`
+	Tag         string `json:"tag"`
+	Description string `json:"description"`
+}
+
+func actionToDTO(a db.Action) actionDTO {
+	return actionDTO{Name: a.Name, Tag: a.Tag, Description: a.Description}
+}
+
+func handleAPIActions(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListActions, actionToDTO)(w, r)
+}
+
+type skillAreaDTO struct {
+	Skill string `json:"skill"`
+	Areas string `json:"areas"`
+}
+
+func skillAreaToDTO(s db.SkillArea) skillAreaDTO {
+	return skillAreaDTO{Skill: s.Skill, Areas: s.Areas}
+}
+
+func handleAPISkillAreas(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListSkillAreas, skillAreaToDTO)(w, r)
+}
+
+type conditionDTO struct {
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	Effects          string `json:"effects"`
+	DescriptionAfter string `json:"descriptionAfter"`
+}
+
+func conditionToDTO(c db.Condition) conditionDTO {
+	return conditionDTO{
+		Name:             c.Name,
+		Description:      c.Description.String,
+		Effects:          c.Effects.String,
+		DescriptionAfter: c.DescriptionAfter.String,
+	}
+}
+
+func handleAPIConditions(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListConditions, conditionToDTO)(w, r)
+}
+
+type exhaustionLevelDTO struct {
+	Level  string `json:"level"`
+	Effect string `json:"effect"`
+}
+
+func exhaustionLevelToDTO(e db.ExhaustionLevel) exhaustionLevelDTO {
+	return exhaustionLevelDTO{Level: e.Level, Effect: e.Effect}
+}
+
+func handleAPIExhaustionLevels(w http.ResponseWriter, r *http.Request) {
+	listHandler(q.ListExhaustionLevels, exhaustionLevelToDTO)(w, r)
+}
+
 type monsterDTO struct {
 	ID       int64  `json:"id"`
 	Name     string `json:"name"`
@@ -317,32 +405,6 @@ func handleAPISpell(w http.ResponseWriter, r *http.Request) {
 
 func handleAPIMaps(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, gameMaps)
-}
-
-func handleAPIRefs(w http.ResponseWriter, r *http.Request) {
-	rows, err := conn.QueryContext(r.Context(), `SELECT id, title, content FROM Refs ORDER BY id`)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	defer rows.Close()
-	type refDTO struct {
-		ID      string          `json:"id"`
-		Title   string          `json:"title"`
-		Content json.RawMessage `json:"content"`
-	}
-	out := []refDTO{}
-	for rows.Next() {
-		var ref refDTO
-		var content string
-		if err := rows.Scan(&ref.ID, &ref.Title, &content); err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		ref.Content = json.RawMessage(content)
-		out = append(out, ref)
-	}
-	writeJSON(w, out)
 }
 
 func handleAPIChat(w http.ResponseWriter, r *http.Request) {

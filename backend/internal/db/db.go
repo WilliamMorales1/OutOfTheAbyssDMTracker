@@ -108,6 +108,45 @@ type Session struct {
 	Checkpoint    sql.NullString
 }
 
+type DemonLord struct {
+	ID                 int64
+	Name               string
+	Dominions          string
+	Epithets           string
+	Layer              string
+	Description        string
+	Servants           string
+	Component          string
+	ComponentLocation  string
+}
+
+type Action struct {
+	ID          int64
+	Name        string
+	Tag         string
+	Description string
+}
+
+type SkillArea struct {
+	ID    int64
+	Skill string
+	Areas string
+}
+
+type Condition struct {
+	ID               int64
+	Name             string
+	Description      sql.NullString
+	Effects          sql.NullString
+	DescriptionAfter sql.NullString
+}
+
+type ExhaustionLevel struct {
+	ID     int64
+	Level  string
+	Effect string
+}
+
 const getMonster = `
 SELECT id, name, type, cr, hp, hp_formula, ac, ac_desc, speed,
   str, dex, con, int_score, wis, cha,
@@ -369,6 +408,122 @@ func (q *Queries) ListNotes(ctx context.Context) ([]Note, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const listDemonLords = `
+SELECT id, name, dominions, epithets, layer, description, servants, component, component_location
+FROM DemonLords ORDER BY name
+`
+
+func (q *Queries) ListDemonLords(ctx context.Context) ([]DemonLord, error) {
+	rows, err := q.db.QueryContext(ctx, listDemonLords)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DemonLord
+	for rows.Next() {
+		var i DemonLord
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Dominions,
+			&i.Epithets,
+			&i.Layer,
+			&i.Description,
+			&i.Servants,
+			&i.Component,
+			&i.ComponentLocation,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
+const listActions = `
+SELECT id, name, tag, description FROM Actions ORDER BY name
+`
+
+func (q *Queries) ListActions(ctx context.Context) ([]Action, error) {
+	rows, err := q.db.QueryContext(ctx, listActions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Action
+	for rows.Next() {
+		var i Action
+		if err := rows.Scan(&i.ID, &i.Name, &i.Tag, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
+const listSkillAreas = `
+SELECT id, skill, areas FROM SkillAreas ORDER BY skill
+`
+
+func (q *Queries) ListSkillAreas(ctx context.Context) ([]SkillArea, error) {
+	rows, err := q.db.QueryContext(ctx, listSkillAreas)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SkillArea
+	for rows.Next() {
+		var i SkillArea
+		if err := rows.Scan(&i.ID, &i.Skill, &i.Areas); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
+const listConditions = `
+SELECT id, name, description, effects, description_after FROM Conditions ORDER BY id
+`
+
+func (q *Queries) ListConditions(ctx context.Context) ([]Condition, error) {
+	rows, err := q.db.QueryContext(ctx, listConditions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Condition
+	for rows.Next() {
+		var i Condition
+		if err := rows.Scan(&i.ID, &i.Name, &i.Description, &i.Effects, &i.DescriptionAfter); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
+
+const listExhaustionLevels = `
+SELECT id, level, effect FROM ExhaustionLevels ORDER BY id
+`
+
+func (q *Queries) ListExhaustionLevels(ctx context.Context) ([]ExhaustionLevel, error) {
+	rows, err := q.db.QueryContext(ctx, listExhaustionLevels)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExhaustionLevel
+	for rows.Next() {
+		var i ExhaustionLevel
+		if err := rows.Scan(&i.ID, &i.Level, &i.Effect); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
 }
 
 const listSessions = `

@@ -3,7 +3,7 @@
 | Player | Character    | Race      | Class           | Background      | Pronouns | Alignment    |
 | ------ | ------------ | --------- | --------------- | --------------- | -------- | ------------ |
 | Logan  | Chiro Ptsuna | Kalashtar | Watcher Paladin | knight          | he/him   | chaotic good |
-| Gabe   | Silvr Cóén | Wood Elf  | Ranger          | outlander       | she/her  | chaotic good |
+| Gabe   | Silvr Cóén   | Wood Elf  | Ranger          | outlander       | she/her  | chaotic good |
 | Maria  | Yvnna        | Eladrin   | GOO Warlock     | sage: astronomy | he/him   | neutral good |
 
 ## Notes

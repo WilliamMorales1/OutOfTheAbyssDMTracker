@@ -33,6 +33,4 @@ migrate:
 
 reseed: migrate
 	cd backend && go run ./cmd/ingest-5etools
-
-index:
 	cd backend && go run ./cmd/ingest-lore

@@ -10,6 +10,40 @@ export interface Session {
   checkpoint: string
 }
 
+export interface DemonLord {
+  name: string
+  dominions: string
+  epithets: string
+  layer: string
+  description: string
+  servants: string
+  component: string
+  componentLocation: string
+}
+
+export interface Action {
+  name: string
+  tag: string
+  description: string
+}
+
+export interface SkillArea {
+  skill: string
+  areas: string
+}
+
+export interface ConditionRow {
+  name: string
+  description: string
+  effects: string
+  descriptionAfter: string
+}
+
+export interface ExhaustionLevel {
+  level: string
+  effect: string
+}
+
 export interface MonsterRow {
   id: number
   name: string
@@ -113,20 +147,6 @@ export interface GameMap {
   markers: Marker[]
 }
 
-export interface RefEntry {
-  name: string
-  tag?: string
-  description?: string
-  bullets?: string[]
-  table?: { headers: string[]; rows: string[][] }
-  descriptionAfter?: string
-}
-
-export interface Reference {
-  id: string
-  title: string
-  content: { entries: RefEntry[] }
-}
 
 export interface SearchResult {
   chapterTitle: string
