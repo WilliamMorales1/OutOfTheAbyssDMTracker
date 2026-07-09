@@ -1,1 +1,0 @@
--- No-op: reverting to the previous auto-merged summary text is not tracked.
