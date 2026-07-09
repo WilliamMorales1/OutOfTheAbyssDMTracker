@@ -5,8 +5,6 @@ export interface Session {
   levelStart: number
   levelEnd: number
   summary: string
-  keyEncounters: string
-  keyNpcs: string
   checkpoint: string
 }
 

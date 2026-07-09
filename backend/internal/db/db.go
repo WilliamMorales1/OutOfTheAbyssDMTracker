@@ -103,8 +103,6 @@ type Session struct {
 	LevelStart    sql.NullInt64
 	LevelEnd      sql.NullInt64
 	Summary       sql.NullString
-	KeyEncounters sql.NullString
-	KeyNpcs       sql.NullString
 	Checkpoint    sql.NullString
 }
 
@@ -527,7 +525,7 @@ func (q *Queries) ListExhaustionLevels(ctx context.Context) ([]ExhaustionLevel, 
 }
 
 const listSessions = `
-SELECT id, session_num, title, chapters, level_start, level_end, summary, key_encounters, key_npcs, checkpoint
+SELECT id, session_num, title, chapters, level_start, level_end, summary, checkpoint
 FROM Sessions ORDER BY session_num
 `
 
@@ -548,8 +546,6 @@ func (q *Queries) ListSessions(ctx context.Context) ([]Session, error) {
 			&i.LevelStart,
 			&i.LevelEnd,
 			&i.Summary,
-			&i.KeyEncounters,
-			&i.KeyNpcs,
 			&i.Checkpoint,
 		); err != nil {
 			return nil, err

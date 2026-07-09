@@ -18,9 +18,11 @@ export async function sessionsPanel(): Promise<Node> {
         ]),
       sortValue: (s) => s.levelStart,
     },
-    { header: 'Summary', render: (s) => s.summary, sortValue: (s) => s.summary },
-    { header: 'Key Encounters', render: (s) => s.keyEncounters, sortValue: (s) => s.keyEncounters },
-    { header: 'Key NPCs', render: (s) => s.keyNpcs, sortValue: (s) => s.keyNpcs },
+    {
+      header: 'Summary',
+      render: (s) => h('span', { style: { whiteSpace: 'pre-wrap' } }, [s.summary]),
+      sortValue: (s) => s.summary,
+    },
     { header: 'Checkpoint', render: (s) => s.checkpoint, sortValue: (s) => s.checkpoint },
   ]
 

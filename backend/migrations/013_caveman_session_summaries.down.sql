@@ -1,0 +1,1 @@
+-- No-op: reverting to the previous summary wording is not tracked.

@@ -49,28 +49,24 @@ func stars(n int64) string {
 }
 
 type sessionDTO struct {
-	SessionNum    int64  `json:"sessionNum"`
-	Title         string `json:"title"`
-	Chapters      string `json:"chapters"`
-	LevelStart    int64  `json:"levelStart"`
-	LevelEnd      int64  `json:"levelEnd"`
-	Summary       string `json:"summary"`
-	KeyEncounters string `json:"keyEncounters"`
-	KeyNpcs       string `json:"keyNpcs"`
-	Checkpoint    string `json:"checkpoint"`
+	SessionNum int64  `json:"sessionNum"`
+	Title      string `json:"title"`
+	Chapters   string `json:"chapters"`
+	LevelStart int64  `json:"levelStart"`
+	LevelEnd   int64  `json:"levelEnd"`
+	Summary    string `json:"summary"`
+	Checkpoint string `json:"checkpoint"`
 }
 
 func sessionToDTO(s db.Session) sessionDTO {
 	return sessionDTO{
-		SessionNum:    s.SessionNum,
-		Title:         s.Title,
-		Chapters:      s.Chapters.String,
-		LevelStart:    s.LevelStart.Int64,
-		LevelEnd:      s.LevelEnd.Int64,
-		Summary:       s.Summary.String,
-		KeyEncounters: s.KeyEncounters.String,
-		KeyNpcs:       s.KeyNpcs.String,
-		Checkpoint:    s.Checkpoint.String,
+		SessionNum: s.SessionNum,
+		Title:      s.Title,
+		Chapters:   s.Chapters.String,
+		LevelStart: s.LevelStart.Int64,
+		LevelEnd:   s.LevelEnd.Int64,
+		Summary:    s.Summary.String,
+		Checkpoint: s.Checkpoint.String,
 	}
 }
 
