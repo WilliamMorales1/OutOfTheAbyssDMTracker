@@ -11,6 +11,9 @@ Sarith
 Topsy & Turvy
 Stool
 
+NPCs have DND follower rules
+PCs are level 6
+
 ## Blingdenstone
 
 Xorn: extra img: <https://5e.tools/img/bestiary/XMM/Xorn.webp>
@@ -142,6 +145,8 @@ he currently tries to take over the rest of the city
 calls slimes his children and wants the city to turn into a giant glob of goo
 
 pudding king = CR
+
+The ooze of hunger is an orb that produces an endless amount of ooze
 
 ### plans for later
 
