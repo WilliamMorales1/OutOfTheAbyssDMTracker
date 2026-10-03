@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: backend
+          version: latest
+
+      - name: Install Chromium
+        run: sudo apt-get update && sudo apt-get install -y chromium
+
+      - name: Browser UI and visual regression tests
+        working-directory: backend
+        run: go test -tags=e2e ./e2e
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate static frontend
+        run: |
+          test -f frontend/index.html
+          test -f frontend/index.css
+          test -f frontend/app/main.js
+          test -f frontend/vendor/marked.esm.js
+          test -f frontend/vendor/monaco/min/vs/loader.js
+          test ! -e frontend/package.json
+          test ! -e frontend/package-lock.json
+          test ! -d frontend/node_modules
+          ! grep -RInE 'jsdelivr.net/npm|frontend/dist|\.ts' frontend/app
+
+      - name: Run frontend logic tests
+        run: node --test frontend/test/monster-scaling.test.mjs

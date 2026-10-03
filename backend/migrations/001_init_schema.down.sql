@@ -1,0 +1,10 @@
+DROP TRIGGER IF EXISTS chapter_chunks_au;
+DROP TRIGGER IF EXISTS chapter_chunks_ad;
+DROP TRIGGER IF EXISTS chapter_chunks_ai;
+DROP TABLE IF EXISTS chapter_chunks_fts;
+DROP TABLE IF EXISTS chapter_chunks;
+DROP TABLE IF EXISTS Notes;
+DROP TABLE IF EXISTS MapMarkers;
+DROP TABLE IF EXISTS GameMaps;
+DROP TABLE IF EXISTS Sessions;
+DROP TABLE IF EXISTS Monsters;

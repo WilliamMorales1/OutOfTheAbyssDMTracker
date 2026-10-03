@@ -1,0 +1,15 @@
+version: "2"
+linters:
+  default: standard
+  enable:
+    - unconvert
+    - unparam
+  settings:
+    errcheck:
+      # Deferred Close() on read-only handles (files, HTTP bodies, sql.Rows/DB)
+      # is idiomatic Go and not worth checking here.
+      exclude-functions:
+        - (io.Closer).Close
+        - (*os.File).Close
+        - (*database/sql.DB).Close
+        - (*database/sql.Rows).Close
