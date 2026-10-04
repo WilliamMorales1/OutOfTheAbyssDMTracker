@@ -2,3 +2,5 @@ oota.exe
 backend/oota
 backend/tmp/
 backend/oota.db
+# campaign map art is copyrighted; supply your own copies
+backend/images/*.webp

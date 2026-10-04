@@ -31,10 +31,12 @@ jobs:
         run: go test ./...
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
           working-directory: backend
           version: latest
+          # Prebuilt binaries lag behind go.mod's Go version; build with the toolchain from setup-go.
+          install-mode: goinstall
 
       - name: Install Chromium
         run: sudo apt-get update && sudo apt-get install -y chromium

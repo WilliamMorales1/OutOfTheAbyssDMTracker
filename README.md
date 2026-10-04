@@ -39,6 +39,8 @@ make run     # run backend/oota
 
 Migrations run automatically on startup. The app listens on `http://localhost:8080` and serves the static frontend from `frontend/`. The binary expects to run from `backend/` (it reads `migrations/`, `images/`, and `../frontend` relative to that directory).
 
+**Map images.** The campaign maps are copyrighted Wizards of the Coast art and are not in this repo. Drop your own copies into `backend/images/` using the filenames in `backend/migrations/002_seed_data.up.sql` (`underdark.webp`, `blingdenstone.webp`, …). The rest of the app works without them.
+
 **2. Seed campaign data (optional, requires network + Ollama)**
 
 ```bash
@@ -125,7 +127,7 @@ All HTTP, JSON, SQL access, migrations, logging, concurrency, and embeddings cli
 │   ├── migrations/           # numbered SQL migration files (SQLite)
 │   ├── notes/                # your Markdown notes (gitignored)
 │   ├── e2e/                  # headless Chromium UI tests and screenshot baselines
-│   ├── images/                # static images, served at /images
+│   ├── images/               # static images, served at /images (map .webp files gitignored)
 │   └── go.mod / go.sum
 ├── frontend/
 │   ├── app/                  # native JavaScript modules and panels
